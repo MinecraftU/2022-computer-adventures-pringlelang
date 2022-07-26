@@ -89,18 +89,32 @@ int main()
             std::cout << args[0];
             break;
         case '+':
-            args[0] = tokens.top();
-            tokens.pop();
             args[1] = tokens.top();
+            tokens.pop();
+            args[0] = tokens.top();
             tokens.pop();
             tokens.push(args[0] + args[1]);
             break;
         case '*':
-            args[0] = tokens.top();
-            tokens.pop();
             args[1] = tokens.top();
             tokens.pop();
+            args[0] = tokens.top();
+            tokens.pop();
             tokens.push(args[0] * args[1]);
+            break;
+        case '-':
+            args[1] = tokens.top();
+            tokens.pop();
+            args[0] = tokens.top();
+            tokens.pop();
+            tokens.push(args[0] - args[1]);
+            break;
+        case '/':
+            args[1] = tokens.top();
+            tokens.pop();
+            args[0] = tokens.top();
+            tokens.pop();
+            tokens.push(args[0] / args[1]);
             break;
         //case tok_identifier:
         //    break;
