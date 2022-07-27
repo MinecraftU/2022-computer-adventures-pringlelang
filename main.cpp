@@ -7,200 +7,161 @@
 #include <utility>
 #include <vector>
 #include <iostream>
+#include <streambuf>
+#include <fstream>
 
-//===----------------------------------------------------------------------===//
-// Lexer a.k.a. scanner a.k.a. lexical analysis XXX
-//===----------------------------------------------------------------------===//
-
-// The lexer returns tokens [0-255] if it is an unknown character, otherwise one
-// of these for known things.
-enum Token
+// Source code class
+class SourceCode
 {
-    tok_eof = -1,
+    int line_number;
+    int column_number;
+    int idx = -1;
+    std::string source;
 
-    // commands
-    tok_def = -2,
-    tok_extern = -3,
-    tok_print = -4,
+public:
+    SourceCode(const std::string &filename)
+    {
+        std::ifstream t(filename);
+        std::string str((std::istreambuf_iterator<char>(t)),
+                        std::istreambuf_iterator<char>());
+        source = str;
+        line_number = 0;
+        column_number = 0;
+    }
 
-    // primary
-    tok_identifier = -5,
-    tok_number = -6,
+    char get_char()
+    {
+        if (idx == source.size())
+            return -1;
+        char c = source[++idx];
+        if (c == '\n')
+        {
+            line_number++;
+            column_number = 0;
+        }
+        else
+        {
+            column_number++;
+        }
+        return c;
+    }
 
-    // control
-    tok_if = -7,
-    tok_else = -8
+    int get_line_number()
+    {
+        return line_number;
+    }
+    int get_column_number()
+    {
+        return column_number;
+    }
+
+    ~SourceCode() = default;
+
+private:
+    std::string filename_;
+    std::vector<std::string> lines_;
 };
 
-static std::string IdentifierStr; // Filled in if tok_identifier
-static double NumVal;             // Filled in if tok_number
-static FILE *pFile = nullptr;
 
-// gettok - Return the next token from standard input.
-static int gettok()
+
+// Token class
+class Token
 {
-    static int LastChar = ' ';
-
-    // Skip any whitespace.
-    while (isspace(LastChar))
-        LastChar = getc(pFile);
-
-    if (isalpha(LastChar))
-    { // identifier: [a-zA-Z][a-zA-Z0-9]*
-        IdentifierStr = LastChar;
-        while (isalnum((LastChar = getc(pFile))))
-            IdentifierStr += LastChar;
-
-        if (IdentifierStr == "def")
-            return tok_def;
-        if (IdentifierStr == "extern")
-            return tok_extern;
-        return tok_identifier;
-    }
-
-    if (isdigit(LastChar) || LastChar == '.')
-    { // Number: [0-9.]+
-        std::string NumStr;
-        do
-        {
-            NumStr += LastChar;
-            LastChar = getc(pFile);
-        } while (isdigit(LastChar) || LastChar == '.');
-
-        NumVal = strtod(NumStr.c_str(), nullptr);
-        return tok_number;
-    }
-
-    if (LastChar == '#')
+public:
+    enum Type
     {
-        // Comment until end of line.
-        do
-            LastChar = getc(pFile);
-        while (LastChar != EOF && LastChar != '\n' && LastChar != '\r');
+        T_EOF,
+        T_NUMBER,
+        T_IDENTIFIER,
+        T_OPERATOR
+    };
 
-        if (LastChar != EOF)
-            return gettok();
+    Type type;
+    int value;   // for T_NUMBER
+    char op;        // for T_OPERATOR
+    std::string id; // for T_IDENTIFIER
+    Token(Type type, int value = 0, char op = 0, const std::string &id = "")
+        : type(type), value(value), op(op), id(id) {}
+};
+
+// Token stream override
+std::ostream &operator<<(std::ostream &Str, Token const &token)
+{
+    // print something from v to str, e.g: Str << v.getX();
+    switch (token.type)
+    {
+    case Token::T_EOF:
+        Str << "<EOF>";
+        break;
+    case Token::T_NUMBER:
+        Str << std::to_string(token.value);
+        break;
+    case Token::T_IDENTIFIER:
+        Str << token.id;
+        break;
+    case Token::T_OPERATOR:
+        Str << std::string(1, token.op);
+        break;
+    default:
+        Str << "<Unknown Symbol>: ";
+        break;
     }
-
-    // Check for end of file.  Don't eat the EOF.
-    if (LastChar == EOF)
-        return tok_eof;
-
-    // Otherwise, just return the character as its ascii value.
-    int ThisChar = LastChar;
-    LastChar = getc(pFile);
-    return ThisChar;
+    return Str;
 }
 
-/// CurTok - Provide a simple token buffer.  CurTok is the current
-/// token the parser is looking at.
-static int CurTok;
-/// getNextToken reads another token from the lexer and updates
-/// CurTok with its results.
-static int getNextToken() { return CurTok = gettok(); }
 
-/// BinopPrecedence - This holds the precedence for each binary operator that is
-/// defined.
-static std::map<char, int> BinopPrecedence;
-static std::map<std::string, Node> IdentifierMap;
 
-//===----------------------------------------------------------------------===//
-// Tree Maker. XXX
-//===----------------------------------------------------------------------===//
+// Lexer class
+class Lexer
+{
+    SourceCode source;
+    char c;
 
-class Node {
 public:
-    virtual ~Node()  = default;
+    Lexer(SourceCode &src) : source(src){
+        c = source.get_char();
+    };
+
+    Token getNextToken()
+    {
+        if (c == -1)
+            return Token(Token::T_EOF, 0);
+
+        while (std::isspace(c)) // skip whitespace
+        {
+            c = source.get_char();
+        }
+        
+        if (std::isdigit(c))
+        {
+            int val = c - '0';
+            while (std::isdigit(c = source.get_char()))
+                val = val * 10 + c - '0';
+            return Token(Token::T_NUMBER, val);
+        }
+        if (std::isalpha(c))
+        {
+            std::string id;
+            while (std::isalnum(c))
+                id += c, c = source.get_char();
+            return Token(Token::T_IDENTIFIER, 0, 0, id);
+        }
+        return Token(Token::T_OPERATOR, 0, c);
+    }
+
     
-    virtual double evaluate() const = 0;
+    ~Lexer() = default;
 };
 
-class NumberNode : public Node {
-public:
-    double val;
-    NumberNode(double val) : val(val) {}
-    double evaluate() const override { return val; }
-};
 
-class IdentifierNode : public Node {
-public:
-    std::string name;
-    IdentifierNode(std::string name) : name(name) {}
-    double evaluate() const override {
-        if (IdentifierMap.count(name) == 0)
-            return 0;
-        return IdentifierMap.at(name)->evaluate();
-    }
-};
 
-class BinOpNode : public Node
-{
-  public:
-    int token;
-    BinOpNode(int tok, Node *lhs, Node *rhs) : token(tok), LHS(lhs), RHS(rhs) {}
-    Node *LHS, *RHS;
-    double evaluate() const override {
-        switch (token) {
-        case '+':
-            return LHS->evaluate() + RHS->evaluate();
-        case '-':
-            return LHS->evaluate() - RHS->evaluate();
-        case '*':
-            return LHS->evaluate() * RHS->evaluate();
-        case '/':
-            return LHS->evaluate() / RHS->evaluate();
-        }
-    }
-};
+// Parser
 
-/// top ::= definition | external | expression | ';'
-static void MainLoop()
-{
-    Node* root = nullptr;
-    Node* cur = root;
-    while (true)
-    {
-        switch (CurTok)
-        {
-        case tok_eof:
-            return;
-        case ';': // ignore top-level semicolons.
-            getNextToken();
-            break;
-        case tok_number:
-            cur = new NumberNode(NumVal);
-            getNextToken();
-            break;
-        case '+':
-            cur = new BinOpNode(CurTok, cur, nullptr);
-            getNextToken();
-            break;
-        default:
-            break;
-        }
-    }
-}
-
-//===----------------------------------------------------------------------===//
-// Main driver code. XXX
-//===----------------------------------------------------------------------===//
-
+// Driver code
 int main()
 {
-    // Install standard binary operators.
-    // 1 is lowest precedence.
-    BinopPrecedence['<'] = 10;
-    BinopPrecedence['+'] = 20;
-    BinopPrecedence['-'] = 20;
-    BinopPrecedence['*'] = 40; // highest.
-
-    // Open the input file.
-    pFile = fopen("example.txt", "r");
-    // Prime the first token.
-    getNextToken();
-
-    // Run the main "interpreter loop" now.
-    MainLoop();
-
+    SourceCode source("example.txt");
+    Lexer lexer(source);
+    std::cout << lexer.getNextToken() << std::endl;
     return 0;
 }
