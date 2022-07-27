@@ -1,6 +1,21 @@
 #include <iostream>
 #include <fstream>
 #include <stack>
+#include <streambuf>
+
+struct SourceCode {
+    std::string src;
+    int idx = 0;
+
+    SourceCode(std::string src_in) {
+        src = src_in;
+    }
+
+    char get_char() {
+        idx++;
+        return src[idx-1];
+    }
+};
 
 // The lexer returns tokens [0-255] if it is an unknown character, otherwise one
 // of these for known things.
@@ -18,19 +33,22 @@ enum Token
 static std::string identifier_str; // Filled in if tok_identifier
 static double num_val;             // Filled in if tok_number
 
+std::stack<int> tokens;
+int idx = 0;
+
 // gettok - Return the next token from standard input.
-static int gettok(FILE *input_file)
+static int gettok(SourceCode src)
 {
     static int last_char = ' ';
 
     // Skip any whitespace.
     while (isspace(last_char))
-        last_char = getc(input_file);
+        last_char = src.get_char();
 
     if (isalpha(last_char))
     { // identifier: [a-zA-Z][a-zA-Z0-9]*
         identifier_str = last_char;
-        while (isalnum((last_char = getc(input_file))))
+        while (isalnum((last_char = src.get_char())))
             identifier_str += last_char;
 
         if (identifier_str == "print")
@@ -44,7 +62,7 @@ static int gettok(FILE *input_file)
         do
         {
             NumStr += last_char;
-            last_char = getc(input_file);
+            last_char = src.get_char();
         } while (isdigit(last_char) || last_char == '.');
 
         num_val = strtod(NumStr.c_str(), 0);
@@ -55,11 +73,11 @@ static int gettok(FILE *input_file)
     {
         // Comment until end of line.
         do
-            last_char = getc(input_file);
+            last_char = src.get_char();
         while (last_char != EOF && last_char != '\n' && last_char != '\r');
 
         if (last_char != EOF)
-            return gettok(input_file);
+            return gettok(src);
     }
 
     // Check for end of file.  Don't eat the EOF.
@@ -68,18 +86,15 @@ static int gettok(FILE *input_file)
 
     // Otherwise, just return the character as its ascii value.
     int this_char = last_char;
-    last_char = getc(input_file);
+    last_char = src.get_char();
     return this_char;
 }
 
-int main()
-{
-    FILE *input_file = fopen("example.txt", "r");
-
-    std::stack<int> tokens;
-    int token = gettok(input_file);
+int parse(SourceCode src) {
+    int token = gettok(src);
     while (token != -1)
     {
+        std::cout << token << " ";
         int args[2]; // REMINDER: convert to vector when 3+ args
         switch (token)
         {
@@ -126,8 +141,21 @@ int main()
             return 1;
         }
 
-        token = gettok(input_file);
+        token = gettok(src);
     }
 
-    fclose(input_file);
+    return 0;
+}
+
+int main()
+{
+    std::ifstream t("example.txt");
+
+    std::string raw_src((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+    SourceCode src = SourceCode(raw_src);
+
+    parse(src);
+
+    t.close();
 }
