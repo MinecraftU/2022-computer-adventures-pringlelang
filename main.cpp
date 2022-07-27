@@ -105,7 +105,14 @@ int parse(SourceCode &src)
     int token = gettok(src);
     while (token != -1)
     {
+        // for operators
         int args[2]; // REMINDER: convert to vector when 3+ args
+        // for case tok_func
+        int lb_found = 0; // there are 3 left brackets, go from 1 to 2 to 3 when they are found.
+        int rb_found = 0; // there are 3 right brackets, go from 1 to 2 to 3 when they are found.
+        std::string name = "";
+        //std::vector<std::string> args;
+        std::string inside_src = "";
         switch (token)
         {
         case tok_print:
@@ -114,8 +121,23 @@ int parse(SourceCode &src)
             std::cout << args[0];
             break;
         case tok_func:
-            functions[identifier_str] = src.raw.substr(src.raw.find('{') + 1, src.raw.find('}') - src.raw.find('{') - 1);
-            while (src.get_char() != '}');
+            while (lb_found != 3 || rb_found != 3) {
+                char c = src.get_char();
+                if (rb_found > lb_found) {
+                    std::cout << "Syntax Error: incorrect bracket placement.\n";
+                    return 1;
+                }
+                if (c == '{') lb_found++;
+                if (c == '}') rb_found++;
+                if (lb_found == 1 && rb_found == 0) {
+                    name += c;
+                } else if (lb_found == 2 && rb_found == 1) {
+                    //
+                } else if (lb_found == 3 && rb_found == 2) {
+                    inside_src += c;
+                }
+            }
+            functions[name.substr(1, name.size() - 1)] = inside_src.substr(1, inside_src.size() - 1);
             break;
         case '+':
             args[1] = tokens.top();
@@ -151,7 +173,7 @@ int parse(SourceCode &src)
             tokens.push(num_val);
             break;
         default:
-            std::cout << "Syntax Error! Invalid character: " << char(token) << ".\n";
+            std::cout << "Syntax Error: invalid character: " << char(token) << ".\n";
             return 1;
         }
 
@@ -170,7 +192,7 @@ int main()
     SourceCode src = SourceCode(raw_src);
 
     parse(src);
-    SourceCode f = SourceCode(functions["FUNC"]);
+    SourceCode f = SourceCode(functions["print7"]);
     parse(f);
 
     t.close();
