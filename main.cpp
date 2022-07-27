@@ -3,17 +3,21 @@
 #include <stack>
 #include <streambuf>
 
-struct SourceCode {
-    std::string src;
+struct SourceCode
+{
+    std::string raw;
     int idx = 0;
 
-    SourceCode(std::string src_in) {
-        src = src_in;
+    SourceCode(std::string raw_in)
+    {
+        raw = raw_in;
     }
 
-    char get_char() {
-        idx++;
-        return src[idx-1];
+    char get_char()
+    {
+        if (idx == raw.length())
+            return EOF;
+        return raw[idx++];
     }
 };
 
@@ -34,10 +38,9 @@ static std::string identifier_str; // Filled in if tok_identifier
 static double num_val;             // Filled in if tok_number
 
 std::stack<int> tokens;
-int idx = 0;
 
 // gettok - Return the next token from standard input.
-static int gettok(SourceCode src)
+static int gettok(SourceCode &src)
 {
     static int last_char = ' ';
 
@@ -90,11 +93,11 @@ static int gettok(SourceCode src)
     return this_char;
 }
 
-int parse(SourceCode src) {
+int parse(SourceCode &src)
+{
     int token = gettok(src);
     while (token != -1)
     {
-        std::cout << token << " ";
         int args[2]; // REMINDER: convert to vector when 3+ args
         switch (token)
         {
@@ -131,8 +134,8 @@ int parse(SourceCode src) {
             tokens.pop();
             tokens.push(args[0] / args[1]);
             break;
-        //case tok_identifier:
-        //    break;
+        // case tok_identifier:
+        //     break;
         case tok_number:
             tokens.push(num_val);
             break;
@@ -152,7 +155,7 @@ int main()
     std::ifstream t("example.txt");
 
     std::string raw_src((std::istreambuf_iterator<char>(t)),
-                    std::istreambuf_iterator<char>());
+                        std::istreambuf_iterator<char>());
     SourceCode src = SourceCode(raw_src);
 
     parse(src);
