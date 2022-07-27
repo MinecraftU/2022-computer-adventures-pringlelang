@@ -1,7 +1,9 @@
 #include <iostream>
 #include <fstream>
-#include <stack>
 #include <streambuf>
+#include <map>
+#include <stack>
+#include <vector>
 
 struct SourceCode
 {
@@ -29,24 +31,27 @@ enum Token
 
     // commands
     tok_print = -2,
+    tok_func = -3,
 
     // primary
-    tok_identifier = -3,
-    tok_number = -4,
+    tok_identifier = -4,
+    tok_number = -5,
 };
 static std::string identifier_str; // Filled in if tok_identifier
 static double num_val;             // Filled in if tok_number
 
 std::stack<int> tokens;
+std::map<std::string, std::string> functions;
 
 // gettok - Return the next token from standard input.
 static int gettok(SourceCode &src)
 {
-    static int last_char = ' ';
+    int last_char = ' ';
 
     // Skip any whitespace.
-    while (isspace(last_char))
+    while (isspace(last_char)) {
         last_char = src.get_char();
+    }
 
     if (isalpha(last_char))
     { // identifier: [a-zA-Z][a-zA-Z0-9]*
@@ -56,6 +61,8 @@ static int gettok(SourceCode &src)
 
         if (identifier_str == "print")
             return tok_print;
+        if (identifier_str == "FUNC")
+            return tok_func;
         return tok_identifier;
     }
 
@@ -106,6 +113,10 @@ int parse(SourceCode &src)
             tokens.pop();
             std::cout << args[0];
             break;
+        case tok_func:
+            functions[identifier_str] = src.raw.substr(src.raw.find('{') + 1, src.raw.find('}') - src.raw.find('{') - 1);
+            while (src.get_char() != '}');
+            break;
         case '+':
             args[1] = tokens.top();
             tokens.pop();
@@ -140,7 +151,7 @@ int parse(SourceCode &src)
             tokens.push(num_val);
             break;
         default:
-            std::cout << "Something went wrong!\n";
+            std::cout << "Syntax Error! Invalid character: " << char(token) << ".\n";
             return 1;
         }
 
@@ -159,6 +170,8 @@ int main()
     SourceCode src = SourceCode(raw_src);
 
     parse(src);
+    SourceCode f = SourceCode(functions["FUNC"]);
+    parse(f);
 
     t.close();
 }
