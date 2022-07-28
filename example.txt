@@ -1,11 +1,5 @@
 FUNC {print7} {} {
-    FUNC {print5} {} {
-        FUNC {print3} {} {
-            3 print
-        }
-        print3
-    }
-    print5
+    3 4 + print 6 # return 6 too!
 }
 
-print7
+print7 print

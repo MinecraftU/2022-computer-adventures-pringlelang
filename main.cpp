@@ -115,18 +115,17 @@ int parse(SourceCode &src)
     int token = gettok(src);
     while (token != -1)
     {
-        // for operators
-        int args[2]; // REMINDER: convert to vector when 3+ args
+        // for functions/operators
+        std::vector<int> args;
         // for case tok_func
         int lb_found = 0; // there are 3 left brackets, go from 1 to 2 to 3 when they are found.
         int rb_found = 0; // there are 3 right brackets, go from 1 to 2 to 3 when they are found.
         std::string name = "";
-        //std::vector<std::string> args;
         std::string inside_src = "";
         switch (token)
         {
         case tok_print:
-            args[0] = tokens.top();
+            args.push_back(tokens.top());
             tokens.pop();
             std::cout << args[0];
             break;
@@ -147,41 +146,40 @@ int parse(SourceCode &src)
                     inside_src += c;
                 }
             }
-            //std::cout << inside_src << "\n";
             functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 2));
             break;
         case '+':
-            args[1] = tokens.top();
+            args.push_back(tokens.top());
             tokens.pop();
-            args[0] = tokens.top();
+            args.push_back(tokens.top());
             tokens.pop();
-            tokens.push(args[0] + args[1]);
+            tokens.push(args[1] + args[0]);
             break;
         case '*':
-            args[1] = tokens.top();
+            args.push_back(tokens.top());
             tokens.pop();
-            args[0] = tokens.top();
+            args.push_back(tokens.top());
             tokens.pop();
-            tokens.push(args[0] * args[1]);
+            tokens.push(args[1] * args[0]);
             break;
         case '-':
-            args[1] = tokens.top();
+            args.push_back(tokens.top());
             tokens.pop();
-            args[0] = tokens.top();
+            args.push_back(tokens.top());
             tokens.pop();
-            tokens.push(args[0] - args[1]);
+            tokens.push(args[1] - args[0]);
             break;
         case '/':
-            args[1] = tokens.top();
+            args.push_back(tokens.top());
             tokens.pop();
-            args[0] = tokens.top();
+            args.push_back(tokens.top());
             tokens.pop();
-            tokens.push(args[0] / args[1]);
+            tokens.push(args[1] / args[0]);
             break;
         case tok_identifier:
             if (functions.count(identifier_str)) { // if identifier_str is a key in functions
                 functions[identifier_str].reset_idx();
-                tokens.push(parse(functions[identifier_str]));
+                parse(functions[identifier_str]);
             } else {
                 std::cout << "Name Error: undeclared variable/function";
                 return 1;
