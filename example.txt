@@ -1,15 +1,4 @@
-FUNC {square} {x} {
-    x x *
-}
-
-12 square print
-
-FUNC {true} {} {
-    1
-}
-
-true print
-
-FUNC {doNothing} {} {}
-
-doNothing
+3 4 + VAR {x}
+x print
+x 1 + VAR {x}
+x 1 + print
