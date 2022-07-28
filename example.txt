@@ -1,5 +1,6 @@
-FUNC {print7} {} {
-    3 4 + print 6 # return 6 too!
+FUNC {printxy} {x y} {
+    x print
+    y print
 }
 
-print7 print
+printxy

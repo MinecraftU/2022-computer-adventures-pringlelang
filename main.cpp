@@ -121,6 +121,8 @@ int parse(SourceCode &src)
         int lb_found = 0; // there are 3 left brackets, go from 1 to 2 to 3 when they are found.
         int rb_found = 0; // there are 3 right brackets, go from 1 to 2 to 3 when they are found.
         std::string name = "";
+        std::vector<std::string> arg_names;
+        std::string arg = "";
         std::string inside_src = "";
         switch (token)
         {
@@ -141,8 +143,17 @@ int parse(SourceCode &src)
                 if (lb_found > rb_found && rb_found == 0) {
                     name += c;
                 } else if (lb_found > rb_found && rb_found == 1) {
-                    //
+                    if (c == ' ') {
+                        arg_names.push_back(arg);
+                        arg = "";
+                    } else {
+                        arg += c;
+                    }
                 } else if ((lb_found > rb_found && rb_found == 2) || rb_found > 2) {
+                    if (arg != "") {
+                        arg_names.push_back(arg);
+                        arg = "";
+                    }
                     inside_src += c;
                 }
             }
@@ -181,7 +192,7 @@ int parse(SourceCode &src)
                 functions[identifier_str].reset_idx();
                 parse(functions[identifier_str]);
             } else {
-                std::cout << "Name Error: undeclared variable/function";
+                std::cout << "Name Error: undeclared variable/function: \"" << identifier_str << "\".\n";
                 return 1;
             }
             break;
@@ -189,7 +200,7 @@ int parse(SourceCode &src)
             tokens.push(num_val);
             break;
         default:
-            std::cout << "Syntax Error: invalid character: " << char(token) << ".\n";
+            std::cout << "Syntax Error: invalid character: \"" << char(token) << "\".\n";
             return 1;
         }
 
