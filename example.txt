@@ -1,3 +1,12 @@
 FUNC {print7} {} {
     3 4 + print
 }
+
+FUNC {print6} {} {
+    2 3 * print
+}
+
+print7 print7 print7
+print6
+print6 print7 print6
+print7

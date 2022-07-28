@@ -15,11 +15,22 @@ struct SourceCode
         raw = raw_in;
     }
 
+    // for some reason a constructor with no arguments gets called, and this is working fine :/
+    SourceCode()
+    {
+        raw = "";
+    }
+
     char get_char()
     {
         if (idx == raw.length())
             return EOF;
         return raw[idx++];
+    }
+
+    void reset_idx()
+    {
+        idx = 0;
     }
 };
 
@@ -41,7 +52,7 @@ static std::string identifier_str; // Filled in if tok_identifier
 static double num_val;             // Filled in if tok_number
 
 std::stack<int> tokens;
-std::map<std::string, std::string> functions;
+std::map<std::string, SourceCode> functions;
 
 // gettok - Return the next token from standard input.
 static int gettok(SourceCode &src)
@@ -137,7 +148,7 @@ int parse(SourceCode &src)
                     inside_src += c;
                 }
             }
-            functions[name.substr(1, name.size() - 1)] = inside_src.substr(1, inside_src.size() - 1);
+            functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 1));
             break;
         case '+':
             args[1] = tokens.top();
@@ -167,8 +178,15 @@ int parse(SourceCode &src)
             tokens.pop();
             tokens.push(args[0] / args[1]);
             break;
-        // case tok_identifier:
-        //     break;
+        case tok_identifier:
+            if (functions.count(identifier_str)) { // if identifier_str is a key in functions
+                functions[identifier_str].reset_idx();
+                tokens.push(parse(functions[identifier_str]));
+            } else {
+                std::cout << "Name Error: undeclared variable/function";
+                return 1;
+            }
+            break;
         case tok_number:
             tokens.push(num_val);
             break;
@@ -192,8 +210,6 @@ int main()
     SourceCode src = SourceCode(raw_src);
 
     parse(src);
-    SourceCode f = SourceCode(functions["print7"]);
-    parse(f);
 
     t.close();
 }
