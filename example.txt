@@ -1,1 +1,15 @@
-3 4 + 3 * 2 - 6 3 / 6 3 / + * print
+FUNC {square} {x} {
+    x x *
+}
+
+12 square print
+
+FUNC {true} {} {
+    1
+}
+
+true print
+
+FUNC {doNothing} {} {}
+
+doNothing
