@@ -18,7 +18,6 @@ struct SourceCode
     // for some reason a constructor with no arguments gets called, and this is working fine :/
     SourceCode()
     {
-        raw = "";
     }
 
     char get_char()
@@ -132,7 +131,7 @@ int parse(SourceCode &src)
             std::cout << args[0];
             break;
         case tok_func:
-            while (lb_found != 3 || rb_found != 3) {
+            while (lb_found != rb_found || lb_found < 3) {
                 char c = src.get_char();
                 if (rb_found > lb_found) {
                     std::cout << "Syntax Error: incorrect bracket placement.\n";
@@ -140,15 +139,16 @@ int parse(SourceCode &src)
                 }
                 if (c == '{') lb_found++;
                 if (c == '}') rb_found++;
-                if (lb_found == 1 && rb_found == 0) {
+                if (lb_found > rb_found && rb_found == 0) {
                     name += c;
-                } else if (lb_found == 2 && rb_found == 1) {
+                } else if (lb_found > rb_found && rb_found == 1) {
                     //
-                } else if (lb_found == 3 && rb_found == 2) {
+                } else if ((lb_found > rb_found && rb_found == 2) || rb_found > 2) {
                     inside_src += c;
                 }
             }
-            functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 1));
+            //std::cout << inside_src << "\n";
+            functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 2));
             break;
         case '+':
             args[1] = tokens.top();

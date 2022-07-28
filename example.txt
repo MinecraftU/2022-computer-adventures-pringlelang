@@ -1,12 +1,11 @@
 FUNC {print7} {} {
-    3 4 + print
+    FUNC {print5} {} {
+        FUNC {print3} {} {
+            3 print
+        }
+        print3
+    }
+    print5
 }
 
-FUNC {print6} {} {
-    2 3 * print
-}
-
-print7 print7 print7
-print6
-print6 print7 print6
 print7
