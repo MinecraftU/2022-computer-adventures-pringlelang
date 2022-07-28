@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <streambuf>
@@ -38,6 +39,25 @@ struct SourceCode
     {
         idx = 0;
     }
+
+    std::string replace_args(std::vector<std::string> args) {
+        if (args.size() != arg_names.size()) {
+            std::cout << "Argument Error: Incorrect amount of aruments (expected " << arg_names.size() << " arguments, got " << args.size() << " arguments).";
+        }
+
+        std::string ret = raw;
+        for (size_t i = 0; i < args.size(); i++) {
+            // https://stackoverflow.com/a/3418285/16191068
+            if (arg_names[i].empty()) continue;
+            size_t start_pos = 0;
+            while ((start_pos = ret.find(arg_names[i], start_pos)) != std::string::npos) {
+                ret.replace(start_pos, arg_names[i].length(), args[i]);
+                start_pos += args[i].length();
+            }
+        }
+
+        return ret;
+    }
 };
 
 // The lexer returns tokens [0-255] if it is an unknown character, otherwise one
@@ -70,7 +90,7 @@ static int gettok(SourceCode &src)
         last_char = src.get_char();
     }
 
-    if (isalpha(last_char))
+    if (isalpha(last_char)) // function names can currently be anything; make it so it can only be alphanumeric
     { // identifier: [a-zA-Z][a-zA-Z0-9]*
         identifier_str = last_char;
         while (isalnum((last_char = src.get_char())))
@@ -198,7 +218,14 @@ int parse(SourceCode &src)
         case tok_identifier:
             if (functions.count(identifier_str)) { // if identifier_str is a key in functions
                 functions[identifier_str].reset_idx();
-                parse(functions[identifier_str]);
+                std::vector<std::string> str_args;
+                for (size_t i = 0; i < functions[identifier_str].arg_names.size(); i++) {
+                    str_args.push_back(std::to_string(tokens.top()));
+                    tokens.pop();
+                }
+                std::reverse(str_args.begin(), str_args.end());
+                SourceCode replaced = SourceCode(functions[identifier_str].replace_args(str_args));
+                parse(replaced);
             } else {
                 std::cout << "Name Error: undeclared variable/function: \"" << identifier_str << "\".\n";
                 return 1;

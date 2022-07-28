@@ -1,6 +1,5 @@
-FUNC {printxy} {x y} {
-    x print
-    y print
+FUNC {square} {x} {
+    x x * print
 }
 
-printxy
+12 square
