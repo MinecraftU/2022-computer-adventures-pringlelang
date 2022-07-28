@@ -9,10 +9,17 @@ struct SourceCode
 {
     std::string raw;
     int idx = 0;
+    std::vector<std::string> arg_names;
 
     SourceCode(std::string raw_in)
     {
         raw = raw_in;
+    }
+
+    SourceCode(std::string raw_in, std::vector<std::string> arg_names_in)
+    {
+        raw = raw_in;
+        arg_names = arg_names_in;
     }
 
     // for some reason a constructor with no arguments gets called, and this is working fine :/
@@ -157,7 +164,8 @@ int parse(SourceCode &src)
                     inside_src += c;
                 }
             }
-            functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 2));
+            arg_names[0] = arg_names[0].substr(1, arg_names[0].size() - 1);
+            functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 2), arg_names);
             break;
         case '+':
             args.push_back(tokens.top());
