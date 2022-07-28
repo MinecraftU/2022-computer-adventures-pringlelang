@@ -167,13 +167,13 @@ int parse(SourceCode &src)
                 }
                 if (c == '{') lb_found++;
                 if (c == '}') rb_found++;
-                if (lb_found > rb_found && rb_found == 0) {
+                if (c != '{' && lb_found > rb_found && rb_found == 0) {
                     name += c;
                 } else if (lb_found > rb_found && rb_found == 1) {
                     if (c == ' ' && arg_name != "") {
                         arg_names.push_back(arg_name);
                         arg_name = "";
-                    } else if (arg_name != "{") {
+                    } else if (c != '{') {
                         arg_name += c;
                     }
                 } else if ((lb_found > rb_found && rb_found == 2) || rb_found > 2) {
@@ -181,11 +181,11 @@ int parse(SourceCode &src)
                         arg_names.push_back(arg_name);
                         arg_name = "";
                     }
-                    inside_src += c;
+                    if (c != '{' || rb_found > 2) inside_src += c;
                 }
             }
-            if (arg_names.size() != 0) arg_names[0] = arg_names[0].substr(1, arg_names[0].size() - 1);
-            functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 2), arg_names);
+            inside_src.pop_back();
+            functions[name] = SourceCode(inside_src, arg_names);
             break;
         case '+':
             args.push_back(tokens.top());
