@@ -6,37 +6,30 @@
 #include <stack>
 #include <vector>
 
-struct SourceCode
-{
+struct SourceCode {
     std::string raw;
     int idx = 0;
     std::vector<std::string> arg_names;
 
-    SourceCode(std::string raw_in)
-    {
+    SourceCode(std::string raw_in) {
         raw = raw_in;
     }
 
-    SourceCode(std::string raw_in, std::vector<std::string> arg_names_in)
-    {
+    SourceCode(std::string raw_in, std::vector<std::string> arg_names_in) {
         raw = raw_in;
         arg_names = arg_names_in;
     }
 
     // for some reason a constructor with no arguments gets called, and this is working fine :/
-    SourceCode()
-    {
-    }
+    SourceCode() {}
 
-    char get_char()
-    {
+    char get_char() {
         if (idx == raw.length())
             return EOF;
         return raw[idx++];
     }
 
-    void reset_idx()
-    {
+    void reset_idx() {
         idx = 0;
     }
 
@@ -62,8 +55,7 @@ struct SourceCode
 
 // The lexer returns tokens [0-255] if it is an unknown character, otherwise one
 // of these for known things.
-enum Token
-{
+enum Token {
     tok_eof = -1,
 
     // commands
@@ -74,15 +66,118 @@ enum Token
     tok_identifier = -4,
     tok_number = -5,
 };
+
 static std::string identifier_str; // Filled in if tok_identifier
 static double num_val;             // Filled in if tok_number
 
 std::stack<int> tokens;
 std::map<std::string, SourceCode> functions;
 
+namespace ParseToken {
+    void print() {
+        std::vector<int> args;
+        args.push_back(tokens.top());
+        tokens.pop();
+        std::cout << args[0];
+    }
+
+    void func(SourceCode &src) {
+        int lb_found = 0; // there are 3 left brackets, go from 1 to 2 to 3 when they are found.
+        int rb_found = 0; // there are 3 right brackets, go from 1 to 2 to 3 when they are found.
+        std::string name = "";
+        std::vector<std::string> arg_names;
+        std::string arg_name = "";
+        std::string inside_src = "";
+
+        while (lb_found != rb_found || lb_found < 3) {
+            char c = src.get_char();
+            if (rb_found > lb_found) {
+                std::cout << "Syntax Error: incorrect bracket placement.\n";
+                exit(EXIT_FAILURE);
+            }
+            if (c == '{') lb_found++;
+            if (c == '}') rb_found++;
+            if (lb_found > rb_found && rb_found == 0) {
+                name += c;
+            } else if (lb_found > rb_found && rb_found == 1) {
+                if (c == ' ' && arg_name != "") {
+                    arg_names.push_back(arg_name);
+                    arg_name = "";
+                } else if (arg_name != "{") {
+                    arg_name += c;
+                }
+            } else if ((lb_found > rb_found && rb_found == 2) || rb_found > 2) {
+                if (arg_name != "" && arg_name != "{") {
+                    arg_names.push_back(arg_name);
+                    arg_name = "";
+                }
+                inside_src += c;
+            }
+        }
+        if (arg_names.size() != 0) arg_names[0] = arg_names[0].substr(1, arg_names[0].size() - 1);
+        functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 2), arg_names);
+    }
+
+    void add() {
+        std::vector<int> args;
+        args.push_back(tokens.top());
+        tokens.pop();
+        args.push_back(tokens.top());
+        tokens.pop();
+        tokens.push(args[1] + args[0]);
+    }
+
+    void multiply() {
+        std::vector<int> args;
+        args.push_back(tokens.top());
+        tokens.pop();
+        args.push_back(tokens.top());
+        tokens.pop();
+        tokens.push(args[1] * args[0]);
+    }
+
+    void subtract() {
+        std::vector<int> args;
+        args.push_back(tokens.top());
+        tokens.pop();
+        args.push_back(tokens.top());
+        tokens.pop();
+        tokens.push(args[1] - args[0]);
+    }
+
+    void divide() {
+        std::vector<int> args;
+        args.push_back(tokens.top());
+        tokens.pop();
+        args.push_back(tokens.top());
+        tokens.pop();
+        tokens.push(args[1] / args[0]);
+    }
+
+    void identifier() {
+        if (functions.count(identifier_str)) { // if identifier_str is a key in functions
+            functions[identifier_str].reset_idx();
+            std::vector<std::string> str_args;
+            for (size_t i = 0; i < functions[identifier_str].arg_names.size(); i++) {
+                str_args.push_back(std::to_string(tokens.top()));
+                tokens.pop();
+            }
+            std::reverse(str_args.begin(), str_args.end());
+            SourceCode replaced = SourceCode(functions[identifier_str].replace_args(str_args));
+            parse(replaced);
+        } else {
+            std::cout << "Name Error: undeclared variable/function: \"" << identifier_str << "\".\n";
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    void number() {
+        tokens.push(num_val);
+    }
+}
+
 // gettok - Return the next token from standard input.
-static int gettok(SourceCode &src)
-{
+static int gettok(SourceCode &src) {
     int last_char = ' ';
 
     // Skip any whitespace.
@@ -90,8 +185,8 @@ static int gettok(SourceCode &src)
         last_char = src.get_char();
     }
 
-    if (isalpha(last_char)) // function names can currently be anything; make it so it can only be alphanumeric
-    { // identifier: [a-zA-Z][a-zA-Z0-9]*
+    // function names can currently be anything; make it so it can only be alphanumeric
+    if (isalpha(last_char)) { // identifier: [a-zA-Z][a-zA-Z0-9]*
         identifier_str = last_char;
         while (isalnum((last_char = src.get_char())))
             identifier_str += last_char;
@@ -103,8 +198,7 @@ static int gettok(SourceCode &src)
         return tok_identifier;
     }
 
-    if (isdigit(last_char) || last_char == '.')
-    { // Number: [0-9.]+
+    if (isdigit(last_char) || last_char == '.') { // Number: [0-9.]+
         std::string NumStr;
         do
         {
@@ -116,8 +210,7 @@ static int gettok(SourceCode &src)
         return tok_number;
     }
 
-    if (last_char == '#')
-    {
+    if (last_char == '#') {
         // Comment until end of line.
         do
             last_char = src.get_char();
@@ -137,106 +230,33 @@ static int gettok(SourceCode &src)
     return this_char;
 }
 
-int parse(SourceCode &src)
-{
+int parse(SourceCode &src) {
     int token = gettok(src);
-    while (token != -1)
-    {
+    while (token != -1) {
         // for functions/operators
-        std::vector<int> args;
         // for case tok_func
-        int lb_found = 0; // there are 3 left brackets, go from 1 to 2 to 3 when they are found.
-        int rb_found = 0; // there are 3 right brackets, go from 1 to 2 to 3 when they are found.
-        std::string name = "";
-        std::vector<std::string> arg_names;
-        std::string arg_name = "";
-        std::string inside_src = "";
+
         switch (token)
         {
         case tok_print:
-            args.push_back(tokens.top());
-            tokens.pop();
-            std::cout << args[0];
-            break;
+            ParseToken::print(); break;
         case tok_func:
-            while (lb_found != rb_found || lb_found < 3) {
-                char c = src.get_char();
-                if (rb_found > lb_found) {
-                    std::cout << "Syntax Error: incorrect bracket placement.\n";
-                    return 1;
-                }
-                if (c == '{') lb_found++;
-                if (c == '}') rb_found++;
-                if (lb_found > rb_found && rb_found == 0) {
-                    name += c;
-                } else if (lb_found > rb_found && rb_found == 1) {
-                    if (c == ' ' && arg_name != "") {
-                        arg_names.push_back(arg_name);
-                        arg_name = "";
-                    } else if (arg_name != "{") {
-                        arg_name += c;
-                    }
-                } else if ((lb_found > rb_found && rb_found == 2) || rb_found > 2) {
-                    if (arg_name != "" && arg_name != "{") {
-                        arg_names.push_back(arg_name);
-                        arg_name = "";
-                    }
-                    inside_src += c;
-                }
-            }
-            if (arg_names.size() != 0) arg_names[0] = arg_names[0].substr(1, arg_names[0].size() - 1);
-            functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 2), arg_names);
-            break;
+            ParseToken::func(src); break;
         case '+':
-            args.push_back(tokens.top());
-            tokens.pop();
-            args.push_back(tokens.top());
-            tokens.pop();
-            tokens.push(args[1] + args[0]);
-            break;
+            ParseToken::add(); break;
         case '*':
-            args.push_back(tokens.top());
-            tokens.pop();
-            args.push_back(tokens.top());
-            tokens.pop();
-            tokens.push(args[1] * args[0]);
-            break;
+            ParseToken::multiply(); break;
         case '-':
-            args.push_back(tokens.top());
-            tokens.pop();
-            args.push_back(tokens.top());
-            tokens.pop();
-            tokens.push(args[1] - args[0]);
-            break;
+            ParseToken::subtract(); break;
         case '/':
-            args.push_back(tokens.top());
-            tokens.pop();
-            args.push_back(tokens.top());
-            tokens.pop();
-            tokens.push(args[1] / args[0]);
-            break;
+            ParseToken::divide(); break;
         case tok_identifier:
-            if (functions.count(identifier_str)) { // if identifier_str is a key in functions
-                functions[identifier_str].reset_idx();
-                std::vector<std::string> str_args;
-                for (size_t i = 0; i < functions[identifier_str].arg_names.size(); i++) {
-                    str_args.push_back(std::to_string(tokens.top()));
-                    tokens.pop();
-                }
-                std::reverse(str_args.begin(), str_args.end());
-                SourceCode replaced = SourceCode(functions[identifier_str].replace_args(str_args));
-                parse(replaced);
-            } else {
-                std::cout << "Name Error: undeclared variable/function: \"" << identifier_str << "\".\n";
-                return 1;
-            }
-            break;
+            ParseToken::identifier(); break;
         case tok_number:
-            tokens.push(num_val);
-            break;
+            ParseToken::number(); break;
         default:
             std::cout << "Syntax Error: invalid character: \"" << char(token) << "\".\n";
-            return 1;
+            exit(EXIT_FAILURE);
         }
 
         token = gettok(src);
@@ -245,15 +265,13 @@ int parse(SourceCode &src)
     return 0;
 }
 
-int main()
-{
+int main() {
     std::ifstream t("example.txt");
 
     std::string raw_src((std::istreambuf_iterator<char>(t)),
                         std::istreambuf_iterator<char>());
+    t.close();
     SourceCode src = SourceCode(raw_src);
 
     parse(src);
-
-    t.close();
 }
