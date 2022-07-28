@@ -1,5 +1,11 @@
-FUNC {square} {x} {
-    x x * print
+#FUNC {square} {x} {
+#    x x *
+#}
+
+#12 square print
+
+FUNC {true} {} {
+    1
 }
 
-12 square
+true print

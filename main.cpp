@@ -149,7 +149,7 @@ int parse(SourceCode &src)
         int rb_found = 0; // there are 3 right brackets, go from 1 to 2 to 3 when they are found.
         std::string name = "";
         std::vector<std::string> arg_names;
-        std::string arg = "";
+        std::string arg_name = "";
         std::string inside_src = "";
         switch (token)
         {
@@ -170,21 +170,21 @@ int parse(SourceCode &src)
                 if (lb_found > rb_found && rb_found == 0) {
                     name += c;
                 } else if (lb_found > rb_found && rb_found == 1) {
-                    if (c == ' ') {
-                        arg_names.push_back(arg);
-                        arg = "";
-                    } else {
-                        arg += c;
+                    if (c == ' ' && arg_name != "") {
+                        arg_names.push_back(arg_name);
+                        arg_name = "";
+                    } else if (arg_name != "{") {
+                        arg_name += c;
                     }
                 } else if ((lb_found > rb_found && rb_found == 2) || rb_found > 2) {
-                    if (arg != "") {
-                        arg_names.push_back(arg);
-                        arg = "";
+                    if (arg_name != "" && arg_name != "{") {
+                        arg_names.push_back(arg_name);
+                        arg_name = "";
                     }
                     inside_src += c;
                 }
             }
-            arg_names[0] = arg_names[0].substr(1, arg_names[0].size() - 1);
+            if (arg_names.size() != 0) arg_names[0] = arg_names[0].substr(1, arg_names[0].size() - 1);
             functions[name.substr(1, name.size() - 1)] = SourceCode(inside_src.substr(1, inside_src.size() - 2), arg_names);
             break;
         case '+':
