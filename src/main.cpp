@@ -13,17 +13,14 @@
 // Source code class
 class SourceCode
 {
-    int line_number;
-    int column_number;
-    int idx = -1;
-    std::string source;
-
 public:
-    SourceCode(const std::string &source) : source(source)
+    explicit SourceCode(const std::string &src) : source(std::move(src))
     {
         line_number = 1;
         column_number = 1;
     }
+
+    SourceCode() = default;
 
     char get_char()
     {
@@ -52,6 +49,12 @@ public:
     }
 
     ~SourceCode() = default;
+
+private:
+    int line_number;
+    int column_number;
+    int idx = -1;
+    std::string source;
 };
 
 // Token class
@@ -390,18 +393,14 @@ public:
 // Driver code
 int main()
 {
-    std::ifstream t("example.txt");
-    std::string str((std::istreambuf_iterator<char>(t)),
-                    std::istreambuf_iterator<char>());
+    std::ifstream t("../input.txt");
+    if (!t.is_open())
+        throw std::runtime_error("File not found in specified location");
+    std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
     SourceCode source(str);
+
     Lexer *lex = new Lexer(source);
-    // while (true)
-    // {
-    //     Token token = lex->getNextToken();
-    //     if (token.type == Token::T_EOF)
-    //         break;
-    //     std::cout << token << std::endl;
-    // }
+
     Parser par(lex);
     ASTNode *root = par.parse();
 

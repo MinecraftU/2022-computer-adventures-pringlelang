@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/solomon/dev/cpp/mcu/reclone/2022-computer-adventures-pringlelang/src/main.cpp
+cctype
+-
+cstdio
+-
+cstdlib
+-
+map
+-
+memory
+-
+string
+-
+utility
+-
+vector
+-
+iostream
+-
+streambuf
+-
+fstream
+-
+

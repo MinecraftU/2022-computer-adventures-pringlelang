@@ -1,0 +1,3 @@
+/home/solomon/dev/cpp/mcu/reclone/2022-computer-adventures-pringlelang/build/CMakeFiles/rebuild_cache.dir
+/home/solomon/dev/cpp/mcu/reclone/2022-computer-adventures-pringlelang/build/CMakeFiles/edit_cache.dir
+/home/solomon/dev/cpp/mcu/reclone/2022-computer-adventures-pringlelang/build/CMakeFiles/pringlelang.dir

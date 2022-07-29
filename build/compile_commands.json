@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/solomon/dev/cpp/mcu/reclone/2022-computer-adventures-pringlelang/build",
+  "command": "/usr/bin/g++    -g   -std=c++11 -g -o CMakeFiles/pringlelang.dir/src/main.cpp.o -c /home/solomon/dev/cpp/mcu/reclone/2022-computer-adventures-pringlelang/src/main.cpp",
+  "file": "/home/solomon/dev/cpp/mcu/reclone/2022-computer-adventures-pringlelang/src/main.cpp"
+}
+]
