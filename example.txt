@@ -1,15 +1,10 @@
-FUNC {square} {x} {
-    x x *
-}
-
-12 square print
-
-FUNC {true} {} {
+FUNC {axylophone} {} {
     1
 }
 
-true print
+FUNC {square} {x} {
+    axylophone
+    x x *
+}
 
-FUNC {doNothing} {} {}
-
-doNothing
+2 2 square print
