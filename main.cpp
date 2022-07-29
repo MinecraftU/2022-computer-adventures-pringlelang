@@ -19,12 +19,8 @@ class SourceCode
     std::string source;
 
 public:
-    SourceCode(const std::string &filename)
+    SourceCode(const std::string &source) : source(source)
     {
-        std::ifstream t(filename);
-        std::string str((std::istreambuf_iterator<char>(t)),
-                        std::istreambuf_iterator<char>());
-        source = str;
         line_number = 0;
         column_number = 0;
     }
@@ -65,34 +61,54 @@ public:
     enum Type
     {
         T_EOF,
-        T_NUMBER,
-        T_IDENTIFIER,
-        T_MUL,
-        T_DIV,
-        T_ADD,
-        T_SUB,
+        NUMBER,
+        IDENTIFIER,
+        MUL,
+        DIV,
+        ADD,
+        SUB,
         T_UNKNOWN
     };
+    static std::string getTypeName(Type type)
+    {
+        switch (type)
+        {
+        case NUMBER:
+            return "NUMBER";
+        case MUL:
+            return "MUL";
+        case DIV:
+            return "DIV";
+        case ADD:
+            return "ADD";
+        case SUB:
+            return "SUB";
+        case T_EOF:
+            return "EOF";
+        default:
+            return "UNKNOWN";
+        }
+    }
 
     Type type;
-    int value;      // for T_NUMBER
-    char op;        // for T_MUL, T_DIV, T_ADD, T_SUBT_OPERATOR
-    std::string id; // for T_IDENTIFIER
+    int value;      // for NUMBER
+    char op;        // for MUL, DIV, ADD, SUB
+    std::string id; // for IDENTIFIER
     Token(Type type, int value = 0, const std::string &id = "")
         : type(type), value(value), id(id)
     {
         switch (type)
         {
-        case T_MUL:
+        case MUL:
             op = '*';
             break;
-        case T_DIV:
+        case DIV:
             op = '/';
             break;
-        case T_ADD:
+        case ADD:
             op = '+';
             break;
-        case T_SUB:
+        case SUB:
             op = '-';
             break;
         default:
@@ -104,44 +120,22 @@ public:
 // Token stream override
 std::ostream &operator<<(std::ostream &Str, Token const &token)
 {
-    // print something from v to str, e.g: Str << v.getX();
-    switch (token.type)
-    {
-    case Token::T_NUMBER:
-        Str << std::to_string(token.value);
-        break;
-    case Token::T_IDENTIFIER:
-        Str << token.id;
-        break;
-    case Token::T_MUL:
-        Str << "*";
-        break;
-    case Token::T_DIV:
-        Str << "/";
-        break;
-    case Token::T_ADD:
-        Str << "+";
-        break;
-    case Token::T_SUB:
-        Str << "-";
-        break;
-    default:
-        break;
-    }
+    Str << "Token(" << Token::getTypeName(token.type) << ")";
     return Str;
 }
 
 // Lexer class
 class Lexer
 {
-    SourceCode source;
     char c;
+    SourceCode source = SourceCode("");
 
 public:
-    Lexer(SourceCode &src) : source(src)
+    Lexer(SourceCode &src)
     {
+        source = src;
         c = source.get_char();
-    };
+    }
 
     Token getNextToken()
     {
@@ -162,29 +156,29 @@ public:
                 val = val * 10 + c - '0';
                 c = source.get_char();
             }
-            return Token(Token::T_NUMBER, val);
+            return Token(Token::NUMBER, val);
         }
         if (std::isalpha(c))
         {
             std::string id;
             while (std::isalnum(c))
                 id += c, c = source.get_char();
-            return Token(Token::T_IDENTIFIER, 0, id);
+            return Token(Token::IDENTIFIER, 0, id);
         }
         Token res = Token(Token::T_UNKNOWN);
         switch (c)
         {
         case '*':
-            res = Token(Token::T_MUL);
+            res = Token(Token::MUL);
             break;
         case '/':
-            res = Token(Token::T_DIV);
+            res = Token(Token::DIV);
             break;
         case '+':
-            res = Token(Token::T_ADD);
+            res = Token(Token::ADD);
             break;
         case '-':
-            res = Token(Token::T_SUB);
+            res = Token(Token::SUB);
             break;
         default:
             break;
@@ -207,6 +201,8 @@ public:
 class ASTNode
 {
 public:
+    Token token;
+    ASTNode(Token token) : token(token) {}
     virtual ~ASTNode() = default;
 };
 
@@ -214,49 +210,61 @@ public:
 class BinOpNode : public ASTNode
 {
 public:
-    ASTNode left;
-    ASTNode right;
-    Token token;
+    ASTNode *left;
+    ASTNode *right;
     char op;
-    BinOpNode(ASTNode left, ASTNode right, const Token &token) : left(left), right(right), token(token) { op = token.op; }
+    BinOpNode(ASTNode *left, ASTNode *right, const Token &token) : ASTNode(token), left(left), right(right) { op = token.op; }
 };
 
 // Number node class
 class NumNode : public ASTNode
 {
 public:
-    Token token;
     int value;
-    NumNode(Token token) : token(token) { value = token.value; }
+    NumNode(Token token) : ASTNode(token), value(token.value) {}
 };
 
 // Parser class
 class Parser
 {
-public:
     Lexer lexer;
     Token current_token = Token(Token::T_UNKNOWN);
-    Parser(Lexer &lexer) : lexer(lexer) { current_token = lexer.getNextToken(); };
+
+public:
+    Parser(Lexer &lexer) : lexer(lexer)
+    {
+        current_token = lexer.getNextToken();
+        std::cout << "Parser created and current token set" << std::endl;
+        std::cout << current_token << std::endl;
+    }
 
     // Compare current token type with the given token type and if they match then "eat"
     // the current token and assign the next token to current_token, otherwise raise an error.
     void eat(Token::Type type)
     {
         if (current_token.type == type)
+        {
+            std::cout << "eating: " << current_token << std::endl;
             current_token = lexer.getNextToken();
+            std::cout << "current token set to: " << current_token << std::endl;
+        }
         else
-            throw std::runtime_error("Syntax error: " + current_token.id + " expected");
+        {
+            throw std::runtime_error("Syntax error: type " + Token::getTypeName(type) + " expected, but found" + Token::getTypeName(current_token.type));
+        }
     }
 
     // factor : NUMBER
     // TODO: factor : NUMBER | IDENTIFIER | '(' expr ')'
-    ASTNode factor()
+    ASTNode *factor()
     {
-        Token t = current_token;
-        if (t.type == Token::T_NUMBER)
+        std::cout << "factor" << std::endl;
+        std::cout << "current token is: " << current_token << std::endl;
+        if (current_token.type == Token::NUMBER)
         {
-            eat(Token::T_NUMBER);
-            return NumNode(t);
+            Token token = current_token;
+            eat(Token::NUMBER);
+            return new NumNode(token);
         }
         else
         {
@@ -268,18 +276,18 @@ public:
     // EXAMPLE 1: term : factor MUL factor
     // EXAMPLE 2: term : factor MUL factor DIV factor
     // EXAMPLE 3: term : factor
-    ASTNode term()
+    ASTNode *term()
     {
-        ASTNode left = factor();
+        ASTNode *left = factor();
         while (current_token.op == '*' || current_token.op == '/')
         {
             Token t = current_token;
             if (t.op == '*')
-                eat(Token::T_MUL);
+                eat(Token::MUL);
             else if (t.op == '/')
-                eat(Token::T_DIV);
-            ASTNode right = factor();
-            left = BinOpNode(left, right, t);
+                eat(Token::DIV);
+            ASTNode *right = factor();
+            left = new BinOpNode(left, right, t);
         }
         return left;
     }
@@ -294,47 +302,105 @@ public:
     // EXAMPLE 2 with even more details: expr : 1 MUL 2 ADD 4 DIV 2 SUB 1
     //                                          1 * 2 + 4 / 2 - 1
     //                                          ((1 * 2) + (4 / 2)) - 1 = 3
-    ASTNode expr()
+    ASTNode *expr()
     {
-        ASTNode left = term();
+        ASTNode *left = term();
 
-        while (current_token.op == '+' || current_token.op == '-')
+        while (current_token.type == Token::ADD || current_token.type == Token::SUB)
         {
             Token t = current_token;
-            if (t.op == '+')
-                eat(Token::T_ADD);
-            else if (t.op == '-')
-                eat(Token::T_SUB);
-            ASTNode right = term();
-            left = BinOpNode(left, right, t);
+            if (t.type == Token::MUL)
+                eat(Token::ADD);
+            else if (t.type == Token::SUB)
+                eat(Token::SUB);
+            ASTNode *right = term();
+            left = new BinOpNode(left, right, t);
         }
         return left;
     }
 
     // parse
-    ASTNode parse()
+    ASTNode *parse()
     {
         return expr();
     }
 };
 // End Parser ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-//
+// Interpreter +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+class NodeVisitor
+{
+public:
+    virtual ~NodeVisitor() = default;
+    virtual int visit(ASTNode *node) = 0;
+};
+
+class Interpreter : public NodeVisitor
+{
+public:
+    ASTNode *ast;
+    Interpreter(ASTNode *ast) : ast(ast){};
+    int interpret()
+    {
+        return visit(ast);
+    }
+    int visit(ASTNode *node)
+    {
+        switch (node->token.type)
+        {
+        case Token::NUMBER:
+        {
+            NumNode *num = dynamic_cast<NumNode *>(node);
+            return num->value;
+        }
+        case Token::ADD:
+        {
+            BinOpNode *binop = dynamic_cast<BinOpNode *>(node);
+            return visit(binop->left) + visit(binop->right);
+        }
+        case Token::SUB:
+        {
+            BinOpNode *binop = dynamic_cast<BinOpNode *>(node);
+            return visit(binop->left) - visit(binop->right);
+        }
+        case Token::MUL:
+        {
+            BinOpNode *binop = dynamic_cast<BinOpNode *>(node);
+            return visit(binop->left) * visit(binop->right);
+        }
+        case Token::DIV:
+        {
+            BinOpNode *binop = dynamic_cast<BinOpNode *>(node);
+            return visit(binop->left) / visit(binop->right);
+        }
+        default:
+            throw std::runtime_error("Error while interpreting AST: " + node->token.id + " expected");
+        }
+    }
+};
+
+// End Interpreter ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 // Driver code
 int main()
 {
-    SourceCode source("example.txt");
+    std::ifstream t("example.txt");
+    std::string str((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+    SourceCode source(str);
     Lexer lex(source);
-    // std::cout << lex.getNextToken() << std::endl;
-    Token t = Token(Token::T_UNKNOWN);
-    do
+    while (true)
     {
-        t = lex.getNextToken();
-        std::cout << t << std::endl;
-    } while (t.type != Token::T_EOF);
-
+        Token token = lex.getNextToken();
+        if (token.type == Token::T_EOF)
+            break;
+        std::cout << token << std::endl;
+    }
     // Parser par(lex);
-    // ASTNode root = par.parse();
-    // std::cout << root << std::endl;
+    // ASTNode *root = par.parse();
+
+    // Interpreter inter(root);
+    // std::cout << "Result: " << inter.interpret() << std::endl;
     return 0;
 }
