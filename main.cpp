@@ -70,16 +70,18 @@ enum Token
     // commands
     tok_print = -2,
     tok_func = -3,
+    tok_var = -4,
 
     // primary
-    tok_identifier = -4,
-    tok_number = -5,
+    tok_identifier = -5,
+    tok_number = -6,
 };
 static std::string identifier_str; // Filled in if tok_identifier
 static double num_val;             // Filled in if tok_number
 
 std::stack<int> tokens;
 std::map<std::string, SourceCode> functions;
+std::map<std::string, int> variables;
 
 // gettok - Return the next token from standard input.
 static int gettok(SourceCode &src)
@@ -101,6 +103,8 @@ static int gettok(SourceCode &src)
             return tok_print;
         if (identifier_str == "FUNC")
             return tok_func;
+        if (identifier_str == "VAR")
+            return tok_var;
         return tok_identifier;
     }
 
@@ -182,11 +186,28 @@ int parse(SourceCode &src)
                         arg_names.push_back(arg_name);
                         arg_name = "";
                     }
-                    if (c != '{' || rb_found > 2) inside_src += c;
+                    if (c != '{' || lb_found != 3) inside_src += c;
                 }
             }
             inside_src.pop_back();
             functions[name] = SourceCode(inside_src, arg_names);
+            break;
+        case tok_var:
+            while (!lb_found || !rb_found) {
+                char c = src.get_char();
+                if (rb_found && !lb_found) {
+                    std::cout << "Syntax Error: incorrect bracket placement.\n";
+                    return 1;
+                }
+                if (c == '{') lb_found = true;
+                else if (c == '}') rb_found = true;
+                else if (lb_found) {
+                    name += c;
+                }
+            }
+            args.push_back(tokens.top());
+            tokens.pop();
+            variables[name] = args[0];
             break;
         case '+':
             args.push_back(tokens.top());
@@ -227,6 +248,8 @@ int parse(SourceCode &src)
                 std::reverse(str_args.begin(), str_args.end());
                 SourceCode replaced = SourceCode(functions[identifier_str].replace_args(str_args));
                 parse(replaced);
+            } else if (variables.count(identifier_str)) { // if identifier_str is a key in functions
+                tokens.push(variables[identifier_str]);
             } else {
                 std::cout << "Name Error: undeclared variable/function: \"" << identifier_str << "\".\n";
                 return 1;

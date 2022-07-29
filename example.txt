@@ -1,10 +1,9 @@
-FUNC {axylophone} {} {
-    1
+FUNC {p} {} {
+    FUNC {q} {} {
+        3 VAR {s}
+        s print
+    }
+    q
 }
 
-FUNC {square} {x} {
-    axylophone
-    x x *
-}
-
-2 2 square print
+p
