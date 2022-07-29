@@ -247,9 +247,7 @@ public:
     {
         if (current_token.type == type)
         {
-            std::cout << "eating: " << current_token << std::endl;
             current_token = lexer->getNextToken();
-            std::cout << "current token set to: " << current_token << std::endl;
         }
         else
         {
@@ -261,7 +259,6 @@ public:
     // TODO: factor : NUMBER | IDENTIFIER | '(' expr ')'
     ASTNode *factor()
     {
-        std::cout << "in factor(), current token is: " << current_token << std::endl;
         if (current_token.type == Token::NUMBER)
         {
             Token t = current_token;
