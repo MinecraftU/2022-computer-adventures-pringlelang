@@ -137,7 +137,7 @@ public:
             c = source.get_char();
         }
 
-        if (c == -1)
+        if (c == -1 || c == '\0')
             return Token(Token::T_EOF);
 
         if (std::isdigit(c))
@@ -397,7 +397,7 @@ int main()
     Lexer *lex = new Lexer(source);
     // while (true)
     // {
-    //     Token token = lex.getNextToken();
+    //     Token token = lex->getNextToken();
     //     if (token.type == Token::T_EOF)
     //         break;
     //     std::cout << token << std::endl;
