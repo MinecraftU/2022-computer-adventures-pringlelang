@@ -1,4 +1,9 @@
-3 4 + VAR {x}
-x print
-x 1 + VAR {x}
-x 1 + print
+FUNC {p} {} {
+    FUNC {q} {} {
+        3 VAR {s}
+        s print
+    }
+    q
+}
+
+p

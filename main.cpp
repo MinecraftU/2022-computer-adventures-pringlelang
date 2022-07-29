@@ -185,7 +185,7 @@ int parse(SourceCode &src)
                         arg_names.push_back(arg_name);
                         arg_name = "";
                     }
-                    if (c != '{' || rb_found > 2) inside_src += c;
+                    if (c != '{' || lb_found != 3) inside_src += c;
                 }
             }
             inside_src.pop_back();
