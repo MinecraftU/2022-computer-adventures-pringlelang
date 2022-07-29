@@ -21,8 +21,8 @@ class SourceCode
 public:
     SourceCode(const std::string &source) : source(source)
     {
-        line_number = 0;
-        column_number = 0;
+        line_number = 1;
+        column_number = 1;
     }
 
     char get_char()
@@ -67,6 +67,8 @@ public:
         DIV,
         ADD,
         SUB,
+        LPAREN,
+        RPAREN,
         T_UNKNOWN
     };
     static std::string getTypeName(Type type)
@@ -85,6 +87,10 @@ public:
             return "SUB";
         case T_EOF:
             return "EOF";
+        case LPAREN:
+            return "LPAREN";
+        case RPAREN:
+            return "RPAREN";
         default:
             return "UNKNOWN";
         }
@@ -92,28 +98,10 @@ public:
 
     Type type;
     int value;      // for NUMBER
-    char op;        // for MUL, DIV, ADD, SUB
     std::string id; // for IDENTIFIER
     Token(Type type, int value = 0, const std::string &id = "")
         : type(type), value(value), id(id)
     {
-        switch (type)
-        {
-        case MUL:
-            op = '*';
-            break;
-        case DIV:
-            op = '/';
-            break;
-        case ADD:
-            op = '+';
-            break;
-        case SUB:
-            op = '-';
-            break;
-        default:
-            break;
-        }
     }
 };
 
@@ -122,9 +110,9 @@ std::ostream &operator<<(std::ostream &Str, Token const &token)
 {
     Str << "Token(" << Token::getTypeName(token.type) << ": ";
     if (token.type == Token::NUMBER)
-        Str <<  token.value;
+        Str << token.value;
     else if (token.type == Token::IDENTIFIER)
-        Str <<  token.id;
+        Str << token.id;
     Str << ")";
     return Str;
 }
@@ -185,6 +173,12 @@ public:
         case '-':
             res = Token(Token::SUB);
             break;
+        case '(':
+            res = Token(Token::LPAREN);
+            break;
+        case ')':
+            res = Token(Token::RPAREN);
+            break;
         default:
             break;
         }
@@ -231,11 +225,11 @@ public:
 // Parser class
 class Parser
 {
-    Lexer* lexer;
+    Lexer *lexer;
     Token current_token = Token(Token::T_UNKNOWN);
 
 public:
-    Parser(Lexer* lex)
+    Parser(Lexer *lex)
     {
         lexer = lex;
         current_token = lexer->getNextToken();
@@ -255,8 +249,8 @@ public:
         }
     }
 
-    // factor : NUMBER
-    // TODO: factor : NUMBER | IDENTIFIER | '(' expr ')'
+    // factor : NUMBER | LPAREN expr RPAREN
+    // TODO: factor : NUMBER | IDENTIFIER | LPAREN expr RPAREN
     ASTNode *factor()
     {
         if (current_token.type == Token::NUMBER)
@@ -265,10 +259,18 @@ public:
             eat(Token::NUMBER);
             return new NumNode(t);
         }
+        else if (current_token.type == Token::LPAREN)
+        {
+            eat(Token::LPAREN);
+            ASTNode *node = expr();
+            eat(Token::RPAREN);
+            return node;
+        }
         else
         {
-            throw std::runtime_error("Syntax error" + lexer->getLocation() + 
-            ": NUMBER expected as factor, instead " + Token::getTypeName(current_token.type) + " was found");
+            throw std::runtime_error(
+                "Syntax error" + lexer->getLocation() +
+                ": NUMBER expected as factor, instead " + Token::getTypeName(current_token.type) + " was found");
         }
     }
 
@@ -340,7 +342,8 @@ class Interpreter : public NodeVisitor
 {
 public:
     ASTNode *ast;
-    Interpreter(ASTNode *root){
+    Interpreter(ASTNode *root)
+    {
         ast = root;
     }
     int interpret()
@@ -391,7 +394,7 @@ int main()
     std::string str((std::istreambuf_iterator<char>(t)),
                     std::istreambuf_iterator<char>());
     SourceCode source(str);
-    Lexer* lex =  new Lexer(source);
+    Lexer *lex = new Lexer(source);
     // while (true)
     // {
     //     Token token = lex.getNextToken();
