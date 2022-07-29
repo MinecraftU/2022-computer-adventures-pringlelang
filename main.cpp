@@ -120,7 +120,12 @@ public:
 // Token stream override
 std::ostream &operator<<(std::ostream &Str, Token const &token)
 {
-    Str << "Token(" << Token::getTypeName(token.type) << ")";
+    Str << "Token(" << Token::getTypeName(token.type) << ": ";
+    if (token.type == Token::NUMBER)
+        Str <<  token.value;
+    else if (token.type == Token::IDENTIFIER)
+        Str <<  token.id;
+    Str << ")";
     return Str;
 }
 
@@ -134,7 +139,7 @@ public:
     Lexer(SourceCode &src)
     {
         source = src;
-        c = source.get_char();
+        c = ' ';
     }
 
     Token getNextToken()
@@ -212,8 +217,7 @@ class BinOpNode : public ASTNode
 public:
     ASTNode *left;
     ASTNode *right;
-    char op;
-    BinOpNode(ASTNode *left, ASTNode *right, const Token &token) : ASTNode(token), left(left), right(right) { op = token.op; }
+    BinOpNode(const Token &token, ASTNode *left, ASTNode *right) : ASTNode(token), left(left), right(right) {}
 };
 
 // Number node class
@@ -227,15 +231,14 @@ public:
 // Parser class
 class Parser
 {
-    Lexer lexer;
+    Lexer* lexer;
     Token current_token = Token(Token::T_UNKNOWN);
 
 public:
-    Parser(Lexer &lexer) : lexer(lexer)
+    Parser(Lexer* lex)
     {
-        current_token = lexer.getNextToken();
-        std::cout << "Parser created and current token set" << std::endl;
-        std::cout << current_token << std::endl;
+        lexer = lex;
+        current_token = lexer->getNextToken();
     }
 
     // Compare current token type with the given token type and if they match then "eat"
@@ -245,7 +248,7 @@ public:
         if (current_token.type == type)
         {
             std::cout << "eating: " << current_token << std::endl;
-            current_token = lexer.getNextToken();
+            current_token = lexer->getNextToken();
             std::cout << "current token set to: " << current_token << std::endl;
         }
         else
@@ -258,17 +261,17 @@ public:
     // TODO: factor : NUMBER | IDENTIFIER | '(' expr ')'
     ASTNode *factor()
     {
-        std::cout << "factor" << std::endl;
-        std::cout << "current token is: " << current_token << std::endl;
+        std::cout << "in factor(), current token is: " << current_token << std::endl;
         if (current_token.type == Token::NUMBER)
         {
-            Token token = current_token;
+            Token t = current_token;
             eat(Token::NUMBER);
-            return new NumNode(token);
+            return new NumNode(t);
         }
         else
         {
-            throw std::runtime_error("Syntax error" + lexer.getLocation() + ": NUMBER expected as factor");
+            throw std::runtime_error("Syntax error" + lexer->getLocation() + 
+            ": NUMBER expected as factor, instead " + Token::getTypeName(current_token.type) + " was found");
         }
     }
 
@@ -279,15 +282,15 @@ public:
     ASTNode *term()
     {
         ASTNode *left = factor();
-        while (current_token.op == '*' || current_token.op == '/')
+        while (current_token.type == Token::MUL || current_token.type == Token::DIV)
         {
             Token t = current_token;
-            if (t.op == '*')
+            if (t.type == Token::MUL)
                 eat(Token::MUL);
-            else if (t.op == '/')
+            else if (t.type == Token::DIV)
                 eat(Token::DIV);
             ASTNode *right = factor();
-            left = new BinOpNode(left, right, t);
+            left = new BinOpNode(t, left, right);
         }
         return left;
     }
@@ -309,12 +312,12 @@ public:
         while (current_token.type == Token::ADD || current_token.type == Token::SUB)
         {
             Token t = current_token;
-            if (t.type == Token::MUL)
+            if (t.type == Token::ADD)
                 eat(Token::ADD);
             else if (t.type == Token::SUB)
                 eat(Token::SUB);
             ASTNode *right = term();
-            left = new BinOpNode(left, right, t);
+            left = new BinOpNode(t, left, right);
         }
         return left;
     }
@@ -340,7 +343,9 @@ class Interpreter : public NodeVisitor
 {
 public:
     ASTNode *ast;
-    Interpreter(ASTNode *ast) : ast(ast){};
+    Interpreter(ASTNode *root){
+        ast = root;
+    }
     int interpret()
     {
         return visit(ast);
@@ -389,18 +394,18 @@ int main()
     std::string str((std::istreambuf_iterator<char>(t)),
                     std::istreambuf_iterator<char>());
     SourceCode source(str);
-    Lexer lex(source);
-    while (true)
-    {
-        Token token = lex.getNextToken();
-        if (token.type == Token::T_EOF)
-            break;
-        std::cout << token << std::endl;
-    }
-    // Parser par(lex);
-    // ASTNode *root = par.parse();
+    Lexer* lex =  new Lexer(source);
+    // while (true)
+    // {
+    //     Token token = lex.getNextToken();
+    //     if (token.type == Token::T_EOF)
+    //         break;
+    //     std::cout << token << std::endl;
+    // }
+    Parser par(lex);
+    ASTNode *root = par.parse();
 
-    // Interpreter inter(root);
-    // std::cout << "Result: " << inter.interpret() << std::endl;
+    Interpreter inter(root);
+    std::cout << "Result: " << inter.interpret() << std::endl;
     return 0;
 }
