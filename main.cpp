@@ -51,7 +51,8 @@ struct SourceCode
             if (arg_names[i].empty()) continue;
             size_t start_pos = 0;
             while ((start_pos = ret.find(arg_names[i], start_pos)) != std::string::npos) {
-                ret.replace(start_pos, arg_names[i].length(), args[i]);
+                if (start_pos == 0 || (!isalnum(ret[start_pos-1]) && !isalnum(ret[start_pos + arg_names[i].length()]))) 
+                    ret.replace(start_pos, arg_names[i].length(), args[i]);
                 start_pos += args[i].length();
             }
         }
