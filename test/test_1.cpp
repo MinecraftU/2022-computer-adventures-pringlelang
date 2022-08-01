@@ -1,7 +1,5 @@
 #include <catch.hpp>
 
-#include "sourcecode.hpp"
-#include "token.hpp"
 #include "interpreter.hpp"
 
 using namespace std;
@@ -21,7 +19,7 @@ SCENARIO( "file input test", "[test_1.cpp]" )
     REQUIRE( myInterp.interpret() == 2 );
 }
 
-SCENARIO( "multiply", "[test_1.cpp]"){
+SCENARIO( "multiply"){
     string src = "2 * 5";
     SourceCode source(src);
     Lexer *lex = new Lexer(source);
@@ -31,7 +29,7 @@ SCENARIO( "multiply", "[test_1.cpp]"){
     REQUIRE( myInterp.interpret() == 10 );
 }
 
-SCENARIO( "divide", "[test_1.cpp]"){
+SCENARIO( "divide"){
     string src = "6 / 2";
     SourceCode source(src);
     Lexer *lex = new Lexer(source);
@@ -41,7 +39,7 @@ SCENARIO( "divide", "[test_1.cpp]"){
     REQUIRE( myInterp.interpret() == 3 );
 }
 
-SCENARIO( "subtract", "[test_1.cpp]"){
+SCENARIO( "subtract"){
     string src = "6 - 2";
     SourceCode source(src);
     Lexer *lex = new Lexer(source);
@@ -49,6 +47,17 @@ SCENARIO( "subtract", "[test_1.cpp]"){
     ASTNode *root = par.parse();
     Interpreter myInterp(root);
     REQUIRE( myInterp.interpret() == 4 );
+}
+
+// I have no idea what the second argument here does, apparently its not used
+SCENARIO( "negative numbers"){
+    string src = "-6 - 2";
+    SourceCode source(src);
+    Lexer *lex = new Lexer(source);
+    Parser par(lex);
+    ASTNode *root = par.parse();
+    Interpreter myInterp(root);
+    REQUIRE( myInterp.interpret() == -8 );
 }
 
 // SCENARIO( "divide by zero", "[test_1.cpp]"){

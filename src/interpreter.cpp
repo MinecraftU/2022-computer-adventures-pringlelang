@@ -36,9 +36,9 @@ int Interpreter::visit(ASTNode *node)
         {
             return visit(binop->left) / visit(binop->right);
         }
-        catch (const std::runtime_error &e)
+        catch (const std::exception &e)
         {
-            std::cerr << "cannot divide by zero" << '\n';
+            throw std::runtime_error("cannot divide by zero");
         }
     }
     default:
