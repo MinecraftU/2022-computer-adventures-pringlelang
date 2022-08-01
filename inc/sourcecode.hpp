@@ -14,24 +14,16 @@ public:
         column_number = 1;
     }
 
+    explicit SourceCode(std::string &str){
+        source = std::move(str);
+        line_number = 1;
+        column_number = 1;
+    }
+
     SourceCode() = default;
 
-    char get_char()
-    {
-        if (idx == source.size())
-            return -1;
-        char c = source[++idx];
-        if (c == '\n')
-        {
-            line_number++;
-            column_number = 0;
-        }
-        else
-        {
-            column_number++;
-        }
-        return c;
-    }
+    char get_char();
+    
 
     int get_line_number()
     {

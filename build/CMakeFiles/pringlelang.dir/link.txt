@@ -1,1 +1,0 @@
-/usr/bin/g++  -g   CMakeFiles/pringlelang.dir/src/main.cpp.o  -o pringlelang 
