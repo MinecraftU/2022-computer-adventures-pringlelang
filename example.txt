@@ -1,9 +1,1 @@
-FUNC {p} {} {
-    FUNC {q} {} {
-        3 VAR {s}
-        s print
-    }
-    q
-}
-
-p
+FUNC {seven} {} {7 VAR {x}}

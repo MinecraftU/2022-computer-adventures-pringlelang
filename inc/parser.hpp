@@ -20,6 +20,9 @@ struct Parser {
 
     int parse(SourceCode &src);
  
+    std::stack<int> get_stack() {
+        return tokens;
+    }
 };
 
 #endif // _PARSER_HPP_

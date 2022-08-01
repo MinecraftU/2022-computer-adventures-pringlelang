@@ -1,7 +1,15 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required (VERSION 3.16)
+project (pringlelang)
 
-# set the project name
-project(Tutorial)
+add_executable(pringlelang src/main.cpp)
 
-# add the executable
-add_executable(pringlelang src/main.cpp src/parser.cpp src/source_code.cpp)
+target_include_directories(pringlelang PUBLIC inc)
+target_link_libraries(pringlelang coreLib)
+
+add_subdirectory(src)
+add_subdirectory(test)
+
+target_compile_options(pringlelang PUBLIC -std=c++11 -g)
+
+include(CTest)
+enable_testing()
