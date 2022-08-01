@@ -157,12 +157,15 @@ int Parser::parse(SourceCode &src)
             if (functions.count(identifier_str)) { // if identifier_str is a key in functions
                 functions[identifier_str].reset_idx();
                 std::vector<std::string> str_args;
-                for (size_t i = 0; i < functions[identifier_str].arg_names.size(); i++) {
+                for (size_t i = 0; i < functions[identifier_str].get_arg_names().size(); i++) {
                     str_args.push_back(std::to_string(tokens.top()));
                     tokens.pop();
                 }
                 std::reverse(str_args.begin(), str_args.end());
-                SourceCode replaced = SourceCode(functions[identifier_str].replace_args(str_args));
+
+                std::string replaced_raw = functions[identifier_str].replace_args(str_args);
+                std::vector<std::string> empty{};
+                SourceCode replaced = SourceCode(replaced_raw, empty);
                 parse(replaced);
             } else if (variables.count(identifier_str)) { // if identifier_str is a key in functions
                 tokens.push(variables[identifier_str]);

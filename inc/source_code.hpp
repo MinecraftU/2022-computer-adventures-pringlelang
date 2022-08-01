@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _SOURCE_CODE_HPP_
 #define _SOURCE_CODE_HPP_
 
@@ -25,31 +26,31 @@ enum Token
 
 struct SourceCode
 {
+    private:
     std::string raw;
     int idx = 0;
     std::vector<std::string> arg_names;
 
-    SourceCode(std::string raw_in)
+    public:
+    SourceCode(std::string &raw_in, std::vector<std::string> &arg_names_in)
     {
-        raw = raw_in;
-    }
-
-    SourceCode(std::string raw_in, std::vector<std::string> arg_names_in)
-    {
-        raw = raw_in;
-        arg_names = arg_names_in;
+        raw = std::move(raw_in);
+        arg_names = std::move(arg_names_in);
     }
 
     // for some reason a constructor with no arguments gets called, and this is working fine :/
-    SourceCode()
-    {
-    }
+    SourceCode() = default;
 
     char get_char()
     {
         if (idx == raw.length())
             return EOF;
         return raw[idx++];
+    }
+
+    std::vector<std::string> get_arg_names() 
+    {
+        return arg_names;
     }
 
     void reset_idx()
