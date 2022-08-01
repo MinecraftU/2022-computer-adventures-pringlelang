@@ -1,5 +1,4 @@
 #include <cctype>
-#include <cstdio>
 #include <cstdlib>
 #include <map>
 #include <memory>
@@ -9,53 +8,7 @@
 #include <iostream>
 #include <streambuf>
 #include <fstream>
-
-// Source code class
-class SourceCode
-{
-public:
-    explicit SourceCode(const std::string &src) : source(std::move(src))
-    {
-        line_number = 1;
-        column_number = 1;
-    }
-
-    SourceCode() = default;
-
-    char get_char()
-    {
-        if (idx == source.size())
-            return -1;
-        char c = source[++idx];
-        if (c == '\n')
-        {
-            line_number++;
-            column_number = 0;
-        }
-        else
-        {
-            column_number++;
-        }
-        return c;
-    }
-
-    int get_line_number()
-    {
-        return line_number;
-    }
-    int get_column_number()
-    {
-        return column_number;
-    }
-
-    ~SourceCode() = default;
-
-private:
-    int line_number;
-    int column_number;
-    int idx = -1;
-    std::string source;
-};
+#include "SourceCode.hpp"
 
 // Token class
 class Token
@@ -70,8 +23,10 @@ public:
         DIV,
         ADD,
         SUB,
+        UNARY_SUB,
         LPAREN,
         RPAREN,
+        ASSIGN,
         T_UNKNOWN
     };
     static std::string getTypeName(Type type)
@@ -94,6 +49,8 @@ public:
             return "LPAREN";
         case RPAREN:
             return "RPAREN";
+        case ASSIGN:
+            return "ASSIGN";
         default:
             return "UNKNOWN";
         }
@@ -124,7 +81,7 @@ std::ostream &operator<<(std::ostream &Str, Token const &token)
 class Lexer
 {
     char c;
-    SourceCode source = SourceCode("");
+    SourceCode source;
 
 public:
     Lexer(SourceCode &src)
@@ -182,6 +139,9 @@ public:
         case ')':
             res = Token(Token::RPAREN);
             break;
+        case '=':
+            res = Token(Token::ASSIGN);
+            break;
         default:
             break;
         }
@@ -217,12 +177,18 @@ public:
     BinOpNode(const Token &token, ASTNode *left, ASTNode *right) : ASTNode(token), left(left), right(right) {}
 };
 
+class UnaryOpNode : public ASTNode
+{
+public:
+    ASTNode *expr;
+    UnaryOpNode(const Token &token, ASTNode *ex) : ASTNode(token), expr(ex) {}
+};
+
 // Number node class
 class NumNode : public ASTNode
 {
 public:
-    int value;
-    NumNode(Token token) : ASTNode(token), value(token.value) {}
+    NumNode(Token &token) : ASTNode(token) {}
 };
 
 // Parser class
@@ -252,11 +218,18 @@ public:
         }
     }
 
-    // factor : NUMBER | LPAREN expr RPAREN
-    // TODO: factor : NUMBER | IDENTIFIER | LPAREN expr RPAREN
+    // factor : NUMBER | LPAREN expr RPAREN | (PLUS | MINUS) factor
+    // TODO: IDENTIFIER
     ASTNode *factor()
     {
-        if (current_token.type == Token::NUMBER)
+        if (current_token.type == Token::SUB)
+        {
+            Token t = current_token;
+            eat(Token::SUB);
+            t.type = Token::UNARY_SUB;
+            return new UnaryOpNode(t, factor());
+        }
+        else if (current_token.type == Token::NUMBER)
         {
             Token t = current_token;
             eat(Token::NUMBER);
@@ -359,27 +332,32 @@ public:
         {
         case Token::NUMBER:
         {
-            NumNode *num = dynamic_cast<NumNode *>(node);
-            return num->value;
+            NumNode *num = static_cast<NumNode *>(node);
+            return num->token.value;
         }
         case Token::ADD:
         {
-            BinOpNode *binop = dynamic_cast<BinOpNode *>(node);
+            BinOpNode *binop = static_cast<BinOpNode *>(node);
             return visit(binop->left) + visit(binop->right);
         }
         case Token::SUB:
         {
-            BinOpNode *binop = dynamic_cast<BinOpNode *>(node);
+            BinOpNode *binop = static_cast<BinOpNode *>(node);
             return visit(binop->left) - visit(binop->right);
+        }
+        case Token::UNARY_SUB:
+        {
+            UnaryOpNode *unop = static_cast<UnaryOpNode *>(node);
+            return -visit(unop->expr);
         }
         case Token::MUL:
         {
-            BinOpNode *binop = dynamic_cast<BinOpNode *>(node);
+            BinOpNode *binop = static_cast<BinOpNode *>(node);
             return visit(binop->left) * visit(binop->right);
         }
         case Token::DIV:
         {
-            BinOpNode *binop = dynamic_cast<BinOpNode *>(node);
+            BinOpNode *binop = static_cast<BinOpNode *>(node);
             return visit(binop->left) / visit(binop->right);
         }
         default:
@@ -396,8 +374,8 @@ int main()
     std::ifstream t("../input.txt");
     if (!t.is_open())
         throw std::runtime_error("File not found in specified location");
-    std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-    SourceCode source(str);
+    ;
+    SourceCode source(t);
 
     Lexer *lex = new Lexer(source);
 
