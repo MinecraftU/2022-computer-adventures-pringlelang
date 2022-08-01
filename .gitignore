@@ -7,3 +7,5 @@
 *.vsix
 
 *.out
+
+build/

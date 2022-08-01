@@ -1,90 +1,6 @@
-#include <algorithm>
-#include <iostream>
-#include <fstream>
-#include <streambuf>
-#include <map>
-#include <stack>
-#include <vector>
+#include "../inc/parser.hpp"
 
-struct SourceCode
-{
-    std::string raw;
-    int idx = 0;
-    std::vector<std::string> arg_names;
-
-    SourceCode(std::string raw_in)
-    {
-        raw = raw_in;
-    }
-
-    SourceCode(std::string raw_in, std::vector<std::string> arg_names_in)
-    {
-        raw = raw_in;
-        arg_names = arg_names_in;
-    }
-
-    // for some reason a constructor with no arguments gets called, and this is working fine :/
-    SourceCode()
-    {
-    }
-
-    char get_char()
-    {
-        if (idx == raw.length())
-            return EOF;
-        return raw[idx++];
-    }
-
-    void reset_idx()
-    {
-        idx = 0;
-    }
-
-    std::string replace_args(std::vector<std::string> args) {
-        if (args.size() != arg_names.size()) {
-            std::cout << "Argument Error: Incorrect amount of aruments (expected " << arg_names.size() << " arguments, got " << args.size() << " arguments).";
-        }
-
-        std::string ret = raw;
-        for (size_t i = 0; i < args.size(); i++) {
-            // https://stackoverflow.com/a/3418285/16191068
-            if (arg_names[i].empty()) continue;
-            size_t start_pos = 0;
-            while ((start_pos = ret.find(arg_names[i], start_pos)) != std::string::npos) {
-                if (start_pos == 0 || (!isalnum(ret[start_pos-1]) && !isalnum(ret[start_pos + arg_names[i].length()]))) 
-                    ret.replace(start_pos, arg_names[i].length(), args[i]);
-                start_pos += args[i].length();
-            }
-        }
-
-        return ret;
-    }
-};
-
-// The lexer returns tokens [0-255] if it is an unknown character, otherwise one
-// of these for known things.
-enum Token
-{
-    tok_eof = -1,
-
-    // commands
-    tok_print = -2,
-    tok_func = -3,
-    tok_var = -4,
-
-    // primary
-    tok_identifier = -5,
-    tok_number = -6,
-};
-static std::string identifier_str; // Filled in if tok_identifier
-static double num_val;             // Filled in if tok_number
-
-std::stack<int> tokens;
-std::map<std::string, SourceCode> functions;
-std::map<std::string, int> variables;
-
-// gettok - Return the next token from standard input.
-static int gettok(SourceCode &src)
+int Parser::gettok(SourceCode &src)
 {
     int last_char = ' ';
 
@@ -142,7 +58,7 @@ static int gettok(SourceCode &src)
     return this_char;
 }
 
-int parse(SourceCode &src)
+int Parser::parse(SourceCode &src)
 {
     int token = gettok(src);
     while (token != -1)
@@ -241,12 +157,14 @@ int parse(SourceCode &src)
             if (functions.count(identifier_str)) { // if identifier_str is a key in functions
                 functions[identifier_str].reset_idx();
                 std::vector<std::string> str_args;
-                for (size_t i = 0; i < functions[identifier_str].arg_names.size(); i++) {
+                for (size_t i = 0; i < functions[identifier_str].get_arg_names().size(); i++) {
                     str_args.push_back(std::to_string(tokens.top()));
                     tokens.pop();
                 }
                 std::reverse(str_args.begin(), str_args.end());
-                SourceCode replaced = SourceCode(functions[identifier_str].replace_args(str_args));
+
+                std::string replaced_raw = functions[identifier_str].replace_args(str_args);
+                SourceCode replaced = SourceCode(replaced_raw);
                 parse(replaced);
             } else if (variables.count(identifier_str)) { // if identifier_str is a key in functions
                 tokens.push(variables[identifier_str]);
@@ -267,17 +185,4 @@ int parse(SourceCode &src)
     }
 
     return 0;
-}
-
-int main()
-{
-    std::ifstream t("example.txt");
-
-    std::string raw_src((std::istreambuf_iterator<char>(t)),
-                        std::istreambuf_iterator<char>());
-    SourceCode src = SourceCode(raw_src);
-
-    parse(src);
-
-    t.close();
 }
