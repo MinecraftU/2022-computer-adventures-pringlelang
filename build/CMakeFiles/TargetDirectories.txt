@@ -1,3 +1,0 @@
-/home/jamesli/github_repos/pringlelang/build/CMakeFiles/rebuild_cache.dir
-/home/jamesli/github_repos/pringlelang/build/CMakeFiles/edit_cache.dir
-/home/jamesli/github_repos/pringlelang/build/CMakeFiles/pringlelang.dir
