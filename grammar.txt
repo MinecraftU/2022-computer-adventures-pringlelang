@@ -1,7 +1,9 @@
 expr : term ((ADD | SUB) term)*
  EXAMPLE 1: expr : term ADD term
  EXAMPLE 1 more details: expr : factor MUL factor ADD factor DIV factor
+ 
 term : factor ((MUL | DIV ) factor)*
  EXAMPLE 1: term : factor MUL factor
  EXAMPLE 2: term : factor MUL factor DIV factor
-factor : (ADD | SUB) factor | NUMBER
+ 
+factor : (ADD | SUB) factor | NUMBER | LPAREN expr RPAREN
