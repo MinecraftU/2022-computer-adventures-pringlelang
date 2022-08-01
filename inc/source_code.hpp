@@ -32,6 +32,12 @@ struct SourceCode
     std::vector<std::string> arg_names;
 
     public:
+    SourceCode(std::string &raw_in)
+    {
+        raw = std::move(raw_in);
+        arg_names = {};
+    }
+
     SourceCode(std::string &raw_in, std::vector<std::string> &arg_names_in)
     {
         raw = std::move(raw_in);

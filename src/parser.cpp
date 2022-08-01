@@ -164,8 +164,7 @@ int Parser::parse(SourceCode &src)
                 std::reverse(str_args.begin(), str_args.end());
 
                 std::string replaced_raw = functions[identifier_str].replace_args(str_args);
-                std::vector<std::string> empty{};
-                SourceCode replaced = SourceCode(replaced_raw, empty);
+                SourceCode replaced = SourceCode(replaced_raw);
                 parse(replaced);
             } else if (variables.count(identifier_str)) { // if identifier_str is a key in functions
                 tokens.push(variables[identifier_str]);
