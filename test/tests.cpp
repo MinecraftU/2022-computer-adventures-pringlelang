@@ -148,4 +148,14 @@ TEST_CASE("Incorrect bracket placement throws error", "[bracket error 2]") {
     REQUIRE(exit_code == 1);
 }
 
+TEST_CASE("Infinite loop can be broken out of", "[infinite loop break]") {
+    int top = get_top(
+        "0 VAR {x}"
+        "LOOP {"
+        "    x"
+        "    BREAK"
+        "}"
+    )
+    REQURIE(top == 0);
+}
 

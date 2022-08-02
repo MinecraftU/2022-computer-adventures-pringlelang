@@ -1,1 +1,7 @@
-FUNC {seven} {} {7 VAR {x}}
+# WARNING: this will run infinitely and fill up your terminal very fast.
+0 VAR {x}
+
+LOOP {
+    x print
+    x 1 + VAR {x}
+}

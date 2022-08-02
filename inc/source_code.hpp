@@ -18,10 +18,12 @@ enum Token
     tok_print = -2,
     tok_func = -3,
     tok_var = -4,
+    tok_loop = -5,
+    tok_break = -6,
 
     // primary
-    tok_identifier = -5,
-    tok_number = -6,
+    tok_identifier = -7,
+    tok_number = -8,
 };
 
 struct SourceCode

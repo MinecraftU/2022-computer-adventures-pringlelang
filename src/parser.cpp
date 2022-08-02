@@ -21,6 +21,10 @@ int Parser::gettok(SourceCode &src)
             return tok_func;
         if (identifier_str == "VAR")
             return tok_var;
+        if (identifier_str == "LOOP")
+            return tok_loop;
+        if (identifier_str == "BREAK")
+            return tok_break;
         return tok_identifier;
     }
 
@@ -68,10 +72,12 @@ int Parser::parse(SourceCode &src)
         // for case tok_func
         int lb_found = 0; // there are 3 left brackets, go from 1 to 2 to 3 when they are found.
         int rb_found = 0; // there are 3 right brackets, go from 1 to 2 to 3 when they are found.
-        std::string name = "";
+        std::string name = ""; // name for func and var, expr for while
         std::vector<std::string> arg_names;
         std::string arg_name = "";
         std::string inside_src = "";
+        // for case tok_loop
+        SourceCode new_src;
         switch (token)
         {
         case tok_print:
@@ -125,6 +131,29 @@ int Parser::parse(SourceCode &src)
             tokens.pop();
             variables[name] = args[0];
             break;
+        case tok_loop:
+            while (lb_found != rb_found || lb_found < 1) {
+                char c = src.get_char();
+                if (rb_found > lb_found) {
+                    std::cout << "Syntax Error: incorrect bracket placement.\n";
+                    return 1;
+                }
+                if (c == '{') lb_found++;
+                if (c == '}') rb_found++;
+                if (((lb_found > rb_found && rb_found == 0) || rb_found > 0) &&
+                    (c != '{' || lb_found != 1)) {
+                    inside_src += c;
+                }
+            }
+            inside_src.pop_back();
+
+            new_src = SourceCode(inside_src);
+            while (true) {
+                if (parse(new_src) != 0) break;
+                new_src.reset_idx();
+            }
+        case tok_break:
+            return 2;
         case '+':
             args.push_back(tokens.top());
             tokens.pop();
