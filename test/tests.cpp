@@ -155,7 +155,7 @@ TEST_CASE("Infinite loop can be broken out of", "[infinite loop break]") {
         "    x"
         "    BREAK"
         "}"
-    )
-    REQURIE(top == 0);
+    );
+    REQUIRE(top == 0);
 }
 
