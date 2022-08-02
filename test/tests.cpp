@@ -10,7 +10,7 @@ int get_top(std::string raw_src) {
     SourceCode src = SourceCode(raw_src);
     parser.parse(src);
 
-    return parser.get_stack().top();
+    return parser.try_peek();
 }
 
 int get_exit_code(std::string raw_src) {
@@ -18,13 +18,6 @@ int get_exit_code(std::string raw_src) {
     SourceCode src = SourceCode(raw_src);
     
     return parser.parse(src);
-}
-
-TEST_CASE("Addition is computed", "[addition]") {
-    int top = get_top(
-        "3 4 +"
-    );
-    REQUIRE(top == 7);
 }
 
 TEST_CASE("Uninitialized identifier throws error", "[name error]") {
@@ -148,4 +141,77 @@ TEST_CASE("Incorrect bracket placement throws error", "[bracket error 2]") {
     REQUIRE(exit_code == 1);
 }
 
+TEST_CASE("Variables inside functions can be redefined", "[variable redefinition]") {
+    int top = get_top(
+        "FUNC {seven} {} {7 VAR {x} x} seven\n"
+        "FUNC {eight} {} {8 VAR {x} x} eight"
+    );
 
+    REQUIRE(top == 8);
+}
+
+// TEST_CASE("Variables from two functions can be used in operation"){
+//     int top = get_top(
+//         "FUNC {seven} {} {7 VAR {x} x} seven"
+//         "FUNC {eight} {} {8 VAR {x} x} eight"
+//         "x 1 +"
+//     );
+
+//     REQUIRE(top == 9);
+// }
+
+TEST_CASE("Invalid amount of operands (0) throws error", "[operand error0]") {
+    int exit_code = get_exit_code(
+        "+"
+    );
+    REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("Invalid amount of operands (1) throws error", "[operand error1]") {
+    int exit_code = get_exit_code(
+        "5 +"
+    );
+    REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("Modulo is computed", "[modulo]") {
+    int top = get_top(
+        "4 3 %"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("Pow is computed", "[pow]") {
+    int top = get_top(
+        "2 5 ^"
+    );
+    REQUIRE(top == 32);
+}
+
+TEST_CASE("Addition is computed", "[addition]") {
+    int top = get_top(
+        "3 4 +"
+    );
+    REQUIRE(top == 7);
+}
+
+TEST_CASE("Subtraction is computed", "[subtraction]") {
+    int top = get_top(
+        "3 4 -"
+    );
+    REQUIRE(top == -1);
+}
+
+TEST_CASE("Multiplication is computed", "[multiplication]") {
+    int top = get_top(
+        "7 8 *"
+    );
+    REQUIRE(top == 56);
+}
+
+TEST_CASE("Division is computed", "[division]") {
+    int top = get_top(
+        "8 2 /"
+    );
+    REQUIRE(top == 4);
+}

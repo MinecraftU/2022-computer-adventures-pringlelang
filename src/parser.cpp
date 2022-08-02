@@ -5,16 +5,17 @@ int Parser::gettok(SourceCode &src)
     int last_char = ' ';
 
     // Skip any whitespace.
-    while (isspace(last_char)) {
+    while (isspace(last_char))
+    {
         last_char = src.get_char();
     }
 
     if (isalpha(last_char)) // function names can currently be anything; make it so it can only be alphanumeric
-    { // identifier: [a-zA-Z][a-zA-Z0-9]*
+    {                       // identifier: [a-zA-Z][a-zA-Z0-9]*
         identifier_str = last_char;
-        while (isalnum((last_char = src.get_char())))
+        while (isalnum((last_char = src.get_char()))){
             identifier_str += last_char;
-
+        }
         if (identifier_str == "print")
             return tok_print;
         if (identifier_str == "FUNC")
@@ -125,39 +126,13 @@ int Parser::parse(SourceCode &src)
             tokens.pop();
             variables[name] = args[0];
             break;
-        case '+':
-            args.push_back(tokens.top());
-            tokens.pop();
-            args.push_back(tokens.top());
-            tokens.pop();
-            tokens.push(args[1] + args[0]);
-            break;
-        case '*':
-            args.push_back(tokens.top());
-            tokens.pop();
-            args.push_back(tokens.top());
-            tokens.pop();
-            tokens.push(args[1] * args[0]);
-            break;
-        case '-':
-            args.push_back(tokens.top());
-            tokens.pop();
-            args.push_back(tokens.top());
-            tokens.pop();
-            tokens.push(args[1] - args[0]);
-            break;
-        case '/':
-            args.push_back(tokens.top());
-            tokens.pop();
-            args.push_back(tokens.top());
-            tokens.pop();
-            tokens.push(args[1] / args[0]);
-            break;
         case tok_identifier:
-            if (functions.count(identifier_str)) { // if identifier_str is a key in functions
+            if (functions.count(identifier_str))
+            { // if identifier_str is a key in functions
                 functions[identifier_str].reset_idx();
                 std::vector<std::string> str_args;
-                for (size_t i = 0; i < functions[identifier_str].get_arg_names().size(); i++) {
+                for (size_t i = 0; i < functions[identifier_str].get_arg_names().size(); i++)
+                {
                     str_args.push_back(std::to_string(tokens.top()));
                     tokens.pop();
                 }
@@ -166,9 +141,13 @@ int Parser::parse(SourceCode &src)
                 std::string replaced_raw = functions[identifier_str].replace_args(str_args);
                 SourceCode replaced = SourceCode(replaced_raw);
                 parse(replaced);
-            } else if (variables.count(identifier_str)) { // if identifier_str is a key in functions
+            }
+            else if (variables.count(identifier_str))
+            { // if identifier_str is a key in functions
                 tokens.push(variables[identifier_str]);
-            } else {
+            }
+            else
+            {
                 std::cout << "Name Error: undeclared variable/function: \"" << identifier_str << "\".\n";
                 return 1;
             }
@@ -176,9 +155,62 @@ int Parser::parse(SourceCode &src)
         case tok_number:
             tokens.push(num_val);
             break;
-        default:
-            std::cout << "Syntax Error: invalid character: \"" << char(token) << "\".\n";
-            return 1;
+        default: // operator or unrecognized character
+            if (operators.find(token) == operators.end())
+            {
+                std::cout << "Syntax Error: unrecognized character: \"" << char(token) << "\".\n";
+                return 1;
+            }
+            if (tokens.size() < 2)
+            {
+                std::cout << "Error: not enough operands in stack.\n";
+                return 1;
+            }
+            switch (token)
+            {
+            case '+':
+                args.push_back(tokens.top());
+                tokens.pop();
+                args.push_back(tokens.top());
+                tokens.pop();
+                tokens.push(args[1] + args[0]);
+                break;
+            case '*':
+                args.push_back(tokens.top());
+                tokens.pop();
+                args.push_back(tokens.top());
+                tokens.pop();
+                tokens.push(args[1] * args[0]);
+                break;
+            case '-':
+                args.push_back(tokens.top());
+                tokens.pop();
+                args.push_back(tokens.top());
+                tokens.pop();
+                tokens.push(args[1] - args[0]);
+                break;
+            case '/':
+                args.push_back(tokens.top());
+                tokens.pop();
+                args.push_back(tokens.top());
+                tokens.pop();
+                tokens.push(args[1] / args[0]);
+                break;
+            case '%':
+                args.push_back(tokens.top());
+                tokens.pop();
+                args.push_back(tokens.top());
+                tokens.pop();
+                tokens.push(args[1] % args[0]);
+                break;
+            case '^':
+                args.push_back(tokens.top());
+                tokens.pop();
+                args.push_back(tokens.top());
+                tokens.pop();
+                tokens.push(pow(args[1], args[0]));
+                break;
+            }
         }
 
         token = gettok(src);
