@@ -1,7 +1,4 @@
-# WARNING: this will run infinitely and fill up your terminal very fast.
-0 VAR {x}
-
-LOOP {
-    x print
-    x 1 + VAR {x}
+0
+0 IF {
+    1 3 + 3 -
 }

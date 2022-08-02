@@ -25,6 +25,8 @@ int Parser::gettok(SourceCode &src)
             return tok_loop;
         if (identifier_str == "BREAK")
             return tok_break;
+        if (identifier_str == "IF")
+            return tok_if;
         return tok_identifier;
     }
 
@@ -154,6 +156,29 @@ int Parser::parse(SourceCode &src)
             }
         case tok_break:
             return 2;
+        case tok_if:
+            while (lb_found != rb_found || lb_found < 1) {
+                char c = src.get_char();
+                if (rb_found > lb_found) {
+                    std::cout << "Syntax Error: incorrect bracket placement.\n";
+                    return 1;
+                }
+                if (c == '{') lb_found++;
+                if (c == '}') rb_found++;
+                if (((lb_found > rb_found && rb_found == 0) || rb_found > 0) &&
+                    (c != '{' || lb_found != 1)) {
+                    inside_src += c;
+                }
+            }
+            inside_src.pop_back();
+
+            args.push_back(tokens.top());
+            tokens.pop();
+            if (args[0]) {
+                new_src = SourceCode(inside_src);
+                if (parse(new_src) != 0) return 2;
+            }
+            break;
         case '+':
             args.push_back(tokens.top());
             tokens.pop();

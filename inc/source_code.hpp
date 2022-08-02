@@ -20,10 +20,11 @@ enum Token
     tok_var = -4,
     tok_loop = -5,
     tok_break = -6,
+    tok_if = -7,
 
     // primary
-    tok_identifier = -7,
-    tok_number = -8,
+    tok_identifier = -8,
+    tok_number = -9,
 };
 
 struct SourceCode
