@@ -1,6 +1,4 @@
 #pragma once
-#ifndef _SOURCE_CODE_HPP_
-#define _SOURCE_CODE_HPP_
 
 #include <algorithm>
 #include <iostream>
@@ -9,6 +7,8 @@
 #include <map>
 #include <stack>
 #include <vector>
+#include <cmath>
+#include <unordered_set>
 
 enum Token
 {
@@ -69,5 +69,3 @@ struct SourceCode
 
     std::string replace_args(std::vector<std::string> args);
 };
-
-#endif // _SOURCE_CODE_HPP_
