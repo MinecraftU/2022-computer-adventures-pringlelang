@@ -30,16 +30,16 @@ int Parser::gettok(SourceCode &src)
         return tok_identifier;
     }
 
-    if (isdigit(last_char) || last_char == '.')
+    if (isdigit(last_char))
     { // Number: [0-9.]+
         std::string NumStr;
         do
         {
             NumStr += last_char;
             last_char = src.get_char();
-        } while (isdigit(last_char) || last_char == '.');
+        } while (isdigit(last_char));
 
-        num_val = strtod(NumStr.c_str(), 0);
+        num_val = std::stoi(NumStr);
         return tok_number;
     }
 
