@@ -114,7 +114,7 @@ int Parser::parse(SourceCode &src)
                 }
             }
             inside_src.pop_back();
-            functions[name] = SourceCode(inside_src, arg_names);
+            functions[name] = std::move(SourceCode(inside_src, arg_names));
             break;
         case tok_var:
             while (!lb_found || !rb_found) {
@@ -149,7 +149,7 @@ int Parser::parse(SourceCode &src)
             }
             inside_src.pop_back();
 
-            new_src = SourceCode(inside_src);
+            new_src = std::move(SourceCode(inside_src));
             while (true) {
                 if (parse(new_src) != 0) break;
                 new_src.reset_idx();
@@ -175,7 +175,7 @@ int Parser::parse(SourceCode &src)
             args.push_back(tokens.top());
             tokens.pop();
             if (args[0] > 0) {
-                new_src = SourceCode(inside_src);
+                new_src = std::move(SourceCode(inside_src));
                 if (parse(new_src) != 0) return 2;
             }
             break;
@@ -218,7 +218,7 @@ int Parser::parse(SourceCode &src)
                 std::reverse(str_args.begin(), str_args.end());
 
                 std::string replaced_raw = functions[identifier_str].replace_args(str_args);
-                SourceCode replaced = SourceCode(replaced_raw);
+                SourceCode replaced = std::move(SourceCode(replaced_raw));
                 parse(replaced);
             } else if (variables.count(identifier_str)) { // if identifier_str is a key in functions
                 tokens.push(variables[identifier_str]);
