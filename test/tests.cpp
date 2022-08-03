@@ -1,7 +1,5 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
-
-#include "source_code.hpp"
 #include "parser.hpp"
 
 // NOTE: putting each "line" in quotes will not put newlines between the lines. beware of unexpected errors caused by this lack of whitespace.
@@ -258,4 +256,109 @@ TEST_CASE("Division is computed", "[division]") {
         "8 2 /"
     );
     REQUIRE(top == 4);
+}
+
+TEST_CASE("less than when less", "[less than]") {
+    int top = get_top(
+        "3 4 <"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("less than when equal") {
+    int top = get_top(
+        "7 7 <"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("less than when greater") {
+    int top = get_top(
+        "5 4 <"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("greater than when greater", "[greater than]") {
+    int top = get_top(
+        "8 7 >"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("greater than when equal") {
+    int top = get_top(
+        "7 7 >"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("greater than when less") {
+    int top = get_top(
+        "1 2 >"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("equal to") {
+    int top = get_top(
+        "2 2 ="
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("equal to fails") {
+    int top = get_top(
+        "2 3 ="
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("not equal to") {
+    int top = get_top(
+        "2 3 = !"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("not false") {
+    int top = get_top(
+        "0 !"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("not true") {
+    int top = get_top(
+        "1 !"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("not equal to fails") {
+    int top = get_top(
+        "2 2 = !"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("not with no operand") {
+    int exit_code = get_exit_code(
+        "!"
+    );
+    REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("not not false") {
+    int top = get_top(
+        "0 ! !"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("not not true") {
+    int top = get_top(
+        "1 ! !"
+    );
+    REQUIRE(top == 1);
 }
