@@ -74,7 +74,7 @@ int Parser::parse(SourceCode &src)
         // for case tok_func
         int lb_found = 0; // there are 3 left brackets, go from 1 to 2 to 3 when they are found.
         int rb_found = 0; // there are 3 right brackets, go from 1 to 2 to 3 when they are found.
-        std::string name = ""; // name for func and var, expr for while
+        std::string name = "";
         std::vector<std::string> arg_names;
         std::string arg_name = "";
         std::string inside_src = "";
