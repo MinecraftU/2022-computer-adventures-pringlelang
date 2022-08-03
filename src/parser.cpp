@@ -174,7 +174,7 @@ int Parser::parse(SourceCode &src)
 
             args.push_back(tokens.top());
             tokens.pop();
-            if (args[0]) {
+            if (args[0] > 0) {
                 new_src = SourceCode(inside_src);
                 if (parse(new_src) != 0) return 2;
             }

@@ -191,11 +191,12 @@ TEST_CASE("If statement works with 0 coerced to false", "[if statement 3]") {
 
 TEST_CASE("If statement works inside loop", "[if statement in loop]") {
     int top = get_top(
-        "0 VAR {x}"
+        "0 5 - VAR {x}"
         "LOOP {"
         "    x"
         "    x IF {BREAK}"
         "    x 1 + VAR {x}"
+        "    x print"
         "}"
     );
     REQUIRE(top == 1);
