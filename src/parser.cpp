@@ -302,21 +302,35 @@ int Parser::parse(SourceCode &src)
         tokens.pop();
         args.push_back(tokens.top());
         tokens.pop();
-        tokens.push((int)(args[1] < args[0]));
+        tokens.push(args[1] < args[0]);
         break;
       case '>':
         args.push_back(tokens.top());
         tokens.pop();
         args.push_back(tokens.top());
         tokens.pop();
-        tokens.push((int)(args[1] > args[0]));
+        tokens.push(args[1] > args[0]);
         break;
       case '=':
         args.push_back(tokens.top());
         tokens.pop();
         args.push_back(tokens.top());
         tokens.pop();
-        tokens.push((int)(args[1] == args[0]));
+        tokens.push(args[1] == args[0]);
+        break;
+      case '&':
+        args.push_back(tokens.top());
+        tokens.pop();
+        args.push_back(tokens.top());
+        tokens.pop();
+        tokens.push(args[1] && args[0]);
+        break;
+      case '|':
+        args.push_back(tokens.top());
+        tokens.pop();
+        args.push_back(tokens.top());
+        tokens.pop();
+        tokens.push(args[1] || args[0]);
         break;
       case '!':
         if (tokens.empty())

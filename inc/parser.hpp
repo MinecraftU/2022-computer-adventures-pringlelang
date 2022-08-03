@@ -4,7 +4,7 @@
 
 struct Parser {
     private:
-    std::unordered_set<int> operators = {'+', '-', '*', '/', '^', '%', '=', '<', '>', '!'};
+    std::unordered_set<int> operators = {'+', '-', '*', '/', '^', '%', '=', '<', '>', '!', '|', '&'};
 
     std::string identifier_str; // Filled in if tok_identifier
     int num_val;             // Filled in if tok_number

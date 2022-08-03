@@ -362,3 +362,73 @@ TEST_CASE("not not true") {
     );
     REQUIRE(top == 1);
 }
+
+TEST_CASE("or true") {
+    int top = get_top(
+        "1 1 |"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("or false") {
+    int top = get_top(
+        "0 1 |"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("or false 2") {
+    int top = get_top(
+        "1 0 |"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("or false 3") {
+    int top = get_top(
+        "0 0 |"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("or with no operand") {
+    int exit_code = get_exit_code(
+        "|"
+    );
+    REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("and true") {
+    int top = get_top(
+        "1 1 &"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("and false") {
+    int top = get_top(
+        "0 1 &"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("and false 2") {
+    int top = get_top(
+        "1 0 &"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("and false 3") {
+    int top = get_top(
+        "0 0 &"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("and with no operand") {
+    int exit_code = get_exit_code(
+        "&"
+    );
+    REQUIRE(exit_code == 1);
+}
