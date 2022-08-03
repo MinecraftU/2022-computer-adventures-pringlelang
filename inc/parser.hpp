@@ -4,6 +4,7 @@
 
 struct Parser {
     private:
+    std::unordered_set<int> operators = {'+', '-', '*', '/', '^', '%', '=', '<', '>', '!', '|', '&'};
 
     std::string identifier_str; // Filled in if tok_identifier
     int num_val;             // Filled in if tok_number
@@ -21,4 +22,11 @@ struct Parser {
     std::stack<int> get_stack() {
         return tokens;
     }
+
+    int try_peek(){
+        if (tokens.empty())
+            throw std::runtime_error("Cannot peek empty stack");
+        return tokens.top();
+    }
+
 };

@@ -7,6 +7,8 @@
 #include <map>
 #include <stack>
 #include <vector>
+#include <cmath>
+#include <unordered_set>
 
 enum Token
 {
