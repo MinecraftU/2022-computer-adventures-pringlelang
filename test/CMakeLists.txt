@@ -3,7 +3,7 @@ add_library(Catch INTERFACE)
 target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
 
 # Add test executable
-add_executable (unit_tests tests.cpp)
+add_executable (unit_tests catch_config.cpp test_1.cpp)
 target_link_libraries(unit_tests PRIVATE Catch coreLib)
 target_compile_options(unit_tests PUBLIC -std=c++11 -g)
 
