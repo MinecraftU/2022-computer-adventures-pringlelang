@@ -7,7 +7,7 @@ struct Parser {
     std::unordered_set<int> operators = {'+', '-', '*', '/', '^', '%'};
 
     std::string identifier_str; // Filled in if tok_identifier
-    double num_val;             // Filled in if tok_number
+    int num_val;             // Filled in if tok_number
 
     std::stack<int> tokens;
     std::map<std::string, SourceCode> functions;
