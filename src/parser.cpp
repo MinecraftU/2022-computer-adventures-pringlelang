@@ -1,4 +1,4 @@
-#include "../inc/parser.hpp"
+#include "parser.hpp"
 
 int Parser::gettok(SourceCode &src)
 {

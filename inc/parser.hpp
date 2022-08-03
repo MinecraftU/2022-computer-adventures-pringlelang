@@ -1,8 +1,6 @@
 #pragma once
-#ifndef _PARSER_HPP_
-#define _PARSER_HPP_
 
-#include "../inc/source_code.hpp"
+#include "source_code.hpp"
 
 struct Parser {
     private:
@@ -24,5 +22,3 @@ struct Parser {
         return tokens;
     }
 };
-
-#endif // _PARSER_HPP_

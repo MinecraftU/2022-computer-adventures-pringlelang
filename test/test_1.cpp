@@ -1,4 +1,3 @@
-#define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
 #include "source_code.hpp"
@@ -201,4 +200,3 @@ TEST_CASE("If statement works inside loop", "[if statement in loop]") {
     );
     REQUIRE(top == 1);
 }
-
