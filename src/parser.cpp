@@ -21,6 +21,12 @@ int Parser::gettok(SourceCode &src)
             return tok_func;
         if (identifier_str == "VAR")
             return tok_var;
+        if (identifier_str == "LOOP")
+            return tok_loop;
+        if (identifier_str == "BREAK")
+            return tok_break;
+        if (identifier_str == "IF")
+            return tok_if;
         return tok_identifier;
     }
 
@@ -72,6 +78,8 @@ int Parser::parse(SourceCode &src)
         std::vector<std::string> arg_names;
         std::string arg_name = "";
         std::string inside_src = "";
+        // for case tok_loop
+        SourceCode new_src;
         switch (token)
         {
         case tok_print:
@@ -124,6 +132,52 @@ int Parser::parse(SourceCode &src)
             args.push_back(tokens.top());
             tokens.pop();
             variables[name] = args[0];
+            break;
+        case tok_loop:
+            while (lb_found != rb_found || lb_found < 1) {
+                char c = src.get_char();
+                if (rb_found > lb_found) {
+                    std::cout << "Syntax Error: incorrect bracket placement.\n";
+                    return 1;
+                }
+                if (c == '{') lb_found++;
+                if (c == '}') rb_found++;
+                if (((lb_found > rb_found && rb_found == 0) || rb_found > 0) &&
+                    (c != '{' || lb_found != 1)) {
+                    inside_src += c;
+                }
+            }
+            inside_src.pop_back();
+
+            new_src = SourceCode(inside_src);
+            while (true) {
+                if (parse(new_src) != 0) break;
+                new_src.reset_idx();
+            }
+        case tok_break:
+            return 2;
+        case tok_if:
+            while (lb_found != rb_found || lb_found < 1) {
+                char c = src.get_char();
+                if (rb_found > lb_found) {
+                    std::cout << "Syntax Error: incorrect bracket placement.\n";
+                    return 1;
+                }
+                if (c == '{') lb_found++;
+                if (c == '}') rb_found++;
+                if (((lb_found > rb_found && rb_found == 0) || rb_found > 0) &&
+                    (c != '{' || lb_found != 1)) {
+                    inside_src += c;
+                }
+            }
+            inside_src.pop_back();
+
+            args.push_back(tokens.top());
+            tokens.pop();
+            if (args[0] > 0) {
+                new_src = SourceCode(inside_src);
+                if (parse(new_src) != 0) return 2;
+            }
             break;
         case '+':
             args.push_back(tokens.top());

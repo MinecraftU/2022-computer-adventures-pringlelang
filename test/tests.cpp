@@ -4,6 +4,8 @@
 #include "source_code.hpp"
 #include "parser.hpp"
 
+// NOTE: putting each "line" in quotes will not put newlines between the lines. beware of unexpected errors caused by this lack of whitespace.
+
 // helper function so i don't have to type all this out to check top of stack after parsing
 int get_top(std::string raw_src) { 
     Parser parser;
@@ -148,4 +150,55 @@ TEST_CASE("Incorrect bracket placement throws error", "[bracket error 2]") {
     REQUIRE(exit_code == 1);
 }
 
+TEST_CASE("Infinite loop can be broken out of", "[infinite loop break]") {
+    int top = get_top(
+        "0 VAR {x}"
+        "LOOP {"
+        "    x"
+        "    BREAK"
+        "}"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("If statement works with 1 coerced to true", "[if statement]") {
+    int top = get_top(
+        "0 "
+        "1 IF {"
+        "    1 1 + 1 -"
+        "}"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("If statement works with 12394 coerced to true", "[if statement 2]") {
+    int top = get_top(
+        "0 "
+        "12 1000 * 394 + IF { 1 1 * 1 * }"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("If statement works with 0 coerced to false", "[if statement 3]") {
+    int top = get_top(
+        "0 "
+        "0 IF {"
+        "    1 3 + 3 -"
+        "}"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("If statement works inside loop", "[if statement in loop]") {
+    int top = get_top(
+        "0 5 - VAR {x}"
+        "LOOP {"
+        "    x"
+        "    x IF {BREAK}"
+        "    x 1 + VAR {x}"
+        "    x print"
+        "}"
+    );
+    REQUIRE(top == 1);
+}
 
