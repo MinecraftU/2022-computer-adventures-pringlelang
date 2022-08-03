@@ -19,6 +19,9 @@ int get_exit_code(std::string raw_src) {
     return parser.parse(src);
 }
 
+//the second parameter here is the label for the category of test.
+// TODO: organize these better and label by category/scope
+
 TEST_CASE("Uninitialized identifier throws error", "[name error]") {
     int exit_code = get_exit_code(
         "3 4 exp"

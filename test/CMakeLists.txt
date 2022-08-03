@@ -9,5 +9,10 @@ target_compile_options(unit_tests PUBLIC -std=c++11 -g)
 
 # Enable unit test.
 include(CTest)
-add_test(NAME unit_tests COMMAND unit_tests)
 
+# Catch (v2.13.2) automatic test registration
+# this is pretty old and not really recommended anymore but it works for now
+# see: https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#parseandaddcatchtestscmake
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../3rd_party/catch_cmake_modules")
+include(ParseAndAddCatchTests)
+ParseAndAddCatchTests(unit_tests)
