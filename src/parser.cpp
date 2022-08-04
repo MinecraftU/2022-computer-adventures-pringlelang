@@ -17,18 +17,8 @@ int Parser::gettok(SourceCode &src)
         {
             identifier_str += last_char;
         }
-        if (identifier_str == "print")
-            return tok_print;
-        if (identifier_str == "FUNC")
-            return tok_func;
-        if (identifier_str == "VAR")
-            return tok_var;
-        if (identifier_str == "LOOP")
-            return tok_loop;
-        if (identifier_str == "BREAK")
-            return tok_break;
-        if (identifier_str == "IF")
-            return tok_if;
+        if (command_to_token.count(identifier_str))
+            return command_to_token[identifier_str];
         return tok_identifier;
     }
 
