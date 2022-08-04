@@ -74,8 +74,8 @@ int Parser::parse(SourceCode &src)
         // for functions/operators
         std::vector<int> args;
         // for case tok_func
-        int lb_found = 0; // there are 3 left brackets, go from 1 to 2 to 3 when they are found.
-        int rb_found = 0; // there are 3 right brackets, go from 1 to 2 to 3 when they are found.
+        char c = ' ';
+        int b_count = 1; // unmatched bracket pair count
         std::string name = "";
         std::vector<std::string> arg_names;
         std::string arg_name = "";
@@ -90,88 +90,50 @@ int Parser::parse(SourceCode &src)
             std::cout << args[0];
             break;
         case tok_func:
-            while (lb_found != rb_found || lb_found < 3)
-            {
-                char c = src.get_char();
-                if (rb_found > lb_found)
-                {
-                    std::cout << "Syntax Error: incorrect bracket placement.\n";
-                    return 1;
-                }
-                if (c == '{')
-                    lb_found++;
-                if (c == '}')
-                    rb_found++;
-                if (c != '{' && lb_found > rb_found && rb_found == 0)
-                {
-                    name += c;
-                }
-                else if (lb_found > rb_found && rb_found == 1)
-                {
-                    if (c == ' ' && arg_name != "")
-                    {
+            c = src.get_char();
+            while (c != '{') {
+                if (c == ' ' && arg_name != "") {
+                    if (name == "") {
+                        name = arg_name;
+                    } else {
                         arg_names.push_back(arg_name);
-                        arg_name = "";
                     }
-                    else if (c != '{')
-                    {
-                        arg_name += c;
-                    }
+                    arg_name = "";
+                } else {
+                    arg_name += c;
                 }
-                else if ((lb_found > rb_found && rb_found == 2) || rb_found > 2)
-                {
-                    if (arg_name != "" && arg_name != "{")
-                    {
-                        arg_names.push_back(arg_name);
-                        arg_name = "";
-                    }
-                    if (c != '{' || lb_found != 3)
-                        inside_src += c;
-                }
+                c = src.get_char();
+            }
+
+            while (b_count != 0) {
+                c = src.get_char();
+
+                inside_src += c;
+                if (c == '{') b_count++;
+                if (c == '}') b_count--;
             }
             inside_src.pop_back();
+
             functions[name] = SourceCode(inside_src, arg_names);
             break;
         case tok_var:
-            while (!lb_found || !rb_found)
-            {
-                char c = src.get_char();
-                if (rb_found && !lb_found)
-                {
-                    std::cout << "Syntax Error: incorrect bracket placement.\n";
-                    return 1;
-                }
-                if (c == '{')
-                    lb_found = true;
-                else if (c == '}')
-                    rb_found = true;
-                else if (lb_found)
-                {
-                    name += c;
-                }
+            if (gettok(src) != tok_identifier) {
+                std::cout << "Name Error: invalid identifier name.\n";
+                return 1;
             }
+
             args.push_back(tokens.top());
             tokens.pop();
-            variables[name] = args[0];
+            variables[identifier_str] = args[0];
             break;
         case tok_loop:
-            while (lb_found != rb_found || lb_found < 1)
-            {
-                char c = src.get_char();
-                if (rb_found > lb_found)
-                {
-                    std::cout << "Syntax Error: incorrect bracket placement.\n";
-                    return 1;
-                }
-                if (c == '{')
-                    lb_found++;
-                if (c == '}')
-                    rb_found++;
-                if (((lb_found > rb_found && rb_found == 0) || rb_found > 0) &&
-                    (c != '{' || lb_found != 1))
-                {
-                    inside_src += c;
-                }
+            c = src.get_char();
+            while (b_count != 0) {
+                c = src.get_char();
+
+                inside_src += c;
+                if (c == '{') b_count++;
+                if (c == '}') b_count--;
             }
             inside_src.pop_back();
             new_src = SourceCode(inside_src);
@@ -181,26 +143,18 @@ int Parser::parse(SourceCode &src)
                     break;
                 new_src.reset_idx();
             }
+            break;
         case tok_break:
             return 2;
+            break;
         case tok_if:
-            while (lb_found != rb_found || lb_found < 1)
-            {
-                char c = src.get_char();
-                if (rb_found > lb_found)
-                {
-                    std::cout << "Syntax Error: incorrect bracket placement.\n";
-                    return 1;
-                }
-                if (c == '{')
-                    lb_found++;
-                if (c == '}')
-                    rb_found++;
-                if (((lb_found > rb_found && rb_found == 0) || rb_found > 0) &&
-                    (c != '{' || lb_found != 1))
-                {
-                    inside_src += c;
-                }
+            c = src.get_char();
+            while (b_count != 0) {
+                c = src.get_char();
+
+                inside_src += c;
+                if (c == '{') b_count++;
+                if (c == '}') b_count--;
             }
             inside_src.pop_back();
 

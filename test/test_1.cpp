@@ -52,7 +52,7 @@ TEST_CASE("Math expression is computed", "[math expression]") {
 
 TEST_CASE("Function is delcared and called", "[function]") {
     int exit_code = get_exit_code(
-        "FUNC {printSeven} {} {"
+        "FUNC printSeven {"
         "    7 print"
         "}"
         "printSeven"
@@ -62,7 +62,7 @@ TEST_CASE("Function is delcared and called", "[function]") {
 
 TEST_CASE("Function with return value is computed", "[function return]") {
     int top = get_top(
-        "FUNC {seven} {} {"
+        "FUNC seven {"
         "    7"
         "}"
         "seven"
@@ -72,7 +72,7 @@ TEST_CASE("Function with return value is computed", "[function return]") {
 
 TEST_CASE("Function with return value and arguments is computed", "[function arguments]") {
     int top = get_top(
-        "FUNC {sum4} {a b c d} {"
+        "FUNC sum4 a b c d {"
         "    a b + c + d +"
         "}"
         "1 2 3 4 sum4"
@@ -82,9 +82,9 @@ TEST_CASE("Function with return value and arguments is computed", "[function arg
 
 TEST_CASE("Nested functions throws no errors", "[nested functions]") {
     int top = get_top(
-        "FUNC {p} {} {"
-        "    FUNC {q} {} {"
-        "        FUNC {r} {} {"
+        "FUNC p {"
+        "    FUNC q {"
+        "        FUNC r {"
         "            8"
         "        }"
         "        r"
@@ -98,7 +98,7 @@ TEST_CASE("Nested functions throws no errors", "[nested functions]") {
 
 TEST_CASE("Variables can be assigned and used", "[variables]") {
     int top = get_top(
-        "10 VAR {x}"
+        "10 VAR x "
         "1 x +"
     );
     REQUIRE(top == 11);
@@ -106,8 +106,8 @@ TEST_CASE("Variables can be assigned and used", "[variables]") {
 
 TEST_CASE("Variables can be reassigned", "[variable ressignment]") {
     int top = get_top(
-        "10 VAR {x}"
-        "x 1 + VAR {x}"
+        "10 VAR x "
+        "x 1 + VAR x "
         "x"
     );
     REQUIRE(top == 11);
@@ -115,7 +115,7 @@ TEST_CASE("Variables can be reassigned", "[variable ressignment]") {
 
 TEST_CASE("Variables can be assigned and used inside functions", "[variables in functions]") {
     int top = get_top(
-        "FUNC {seven} {} {7 VAR {x} x} seven"
+        "FUNC seven {7 VAR x x} seven"
     );
 
     REQUIRE(top == 7);
@@ -123,8 +123,8 @@ TEST_CASE("Variables can be assigned and used inside functions", "[variables in 
 
 TEST_CASE("Incorrect amount of brackets throws error", "[bracket error]") {
     int exit_code = get_exit_code(
-        "FUNC {seven} {} {"
-        "    7 VAR {my_var}}"
+        "FUNC seven {"
+        "    7 VAR my_var}"
         "    my_var"
         "}"
         "seven"
@@ -134,8 +134,8 @@ TEST_CASE("Incorrect amount of brackets throws error", "[bracket error]") {
 
 TEST_CASE("Incorrect bracket placement throws error", "[bracket error 2]") {
     int exit_code = get_exit_code(
-        "FUNC {seven} }{ {"
-        "    7 VAR {my_var}"
+        "FUNC seven {"
+        "    7 VAR }{my_var}"
         "    my_var"
         "}"
         "seven"
@@ -145,8 +145,8 @@ TEST_CASE("Incorrect bracket placement throws error", "[bracket error 2]") {
 
 TEST_CASE("Variables inside functions can be redefined", "[variable redefinition]") {
     int top = get_top(
-        "FUNC {seven} {} {7 VAR {x} x} seven\n"
-        "FUNC {eight} {} {8 VAR {x} x} eight"
+        "FUNC seven {7 VAR x x} seven\n"
+        "FUNC eight {8 VAR x x} eight"
     );
 
     REQUIRE(top == 8);
@@ -154,11 +154,12 @@ TEST_CASE("Variables inside functions can be redefined", "[variable redefinition
 
 TEST_CASE("Infinite loop can be broken out of", "[infinite loop break]") {
     int top = get_top(
-        "0 VAR {x}"
+        "0 VAR x "
         "LOOP {"
         "    x"
         "    BREAK"
         "}"
+        "x print"
     );
     REQUIRE(top == 0);
 }
@@ -193,11 +194,11 @@ TEST_CASE("If statement works with 0 coerced to false", "[if statement 3]") {
 
 TEST_CASE("If statement works inside loop", "[if statement in loop]") {
     int top = get_top(
-        "0 5 - VAR {x}"
+        "0 5 - VAR x "
         "LOOP {"
         "    x"
         "    x IF {BREAK}"
-        "    x 1 + VAR {x}"
+        "    x 1 + VAR x "
         "    x print"
         "}"
     );

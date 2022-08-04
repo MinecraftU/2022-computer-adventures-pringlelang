@@ -1,4 +1,6 @@
-0
-0 IF {
-    1 3 + 3 -
-}
+0 VAR x
+
+LOOP {
+    x
+    BREAK
+}x print
