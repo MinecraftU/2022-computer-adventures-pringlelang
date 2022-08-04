@@ -1,7 +1,4 @@
-#define CATCH_CONFIG_MAIN
 #include <catch.hpp>
-
-#include "source_code.hpp"
 #include "parser.hpp"
 
 // NOTE: putting each "line" in quotes will not put newlines between the lines. beware of unexpected errors caused by this lack of whitespace.
@@ -12,7 +9,7 @@ int get_top(std::string raw_src) {
     SourceCode src = SourceCode(raw_src);
     parser.parse(src);
 
-    return parser.get_stack().top();
+    return parser.try_peek();
 }
 
 int get_exit_code(std::string raw_src) {
@@ -22,12 +19,8 @@ int get_exit_code(std::string raw_src) {
     return parser.parse(src);
 }
 
-TEST_CASE("Addition is computed", "[addition]") {
-    int top = get_top(
-        "3 4 +"
-    );
-    REQUIRE(top == 7);
-}
+//the second parameter here is the label for the category of test.
+// TODO: organize these better and label by category/scope
 
 TEST_CASE("Uninitialized identifier throws error", "[name error]") {
     int exit_code = get_exit_code(
@@ -150,6 +143,15 @@ TEST_CASE("Incorrect bracket placement throws error", "[bracket error 2]") {
     REQUIRE(exit_code == 1);
 }
 
+TEST_CASE("Variables inside functions can be redefined", "[variable redefinition]") {
+    int top = get_top(
+        "FUNC seven {7 VAR x x} seven\n"
+        "FUNC eight {8 VAR x x} eight"
+    );
+
+    REQUIRE(top == 8);
+}
+
 TEST_CASE("Infinite loop can be broken out of", "[infinite loop break]") {
     int top = get_top(
         "0 VAR x "
@@ -203,3 +205,233 @@ TEST_CASE("If statement works inside loop", "[if statement in loop]") {
     REQUIRE(top == 1);
 }
 
+TEST_CASE("Invalid amount of operands (0) throws error", "[operand error0]") {
+    int exit_code = get_exit_code(
+        "+"
+    );
+    REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("Invalid amount of operands (1) throws error", "[operand error1]") {
+    int exit_code = get_exit_code(
+        "5 +"
+    );
+    REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("Modulo is computed", "[modulo]") {
+    int top = get_top(
+        "4 3 %"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("Pow is computed", "[pow]") {
+    int top = get_top(
+        "2 5 ^"
+    );
+    REQUIRE(top == 32);
+}
+
+TEST_CASE("Addition is computed", "[addition]") {
+    int top = get_top(
+        "3 4 +"
+    );
+    REQUIRE(top == 7);
+}
+
+TEST_CASE("Subtraction is computed", "[subtraction]") {
+    int top = get_top(
+        "3 4 -"
+    );
+    REQUIRE(top == -1);
+}
+
+TEST_CASE("Multiplication is computed", "[multiplication]") {
+    int top = get_top(
+        "7 8 *"
+    );
+    REQUIRE(top == 56);
+}
+
+TEST_CASE("Division is computed", "[division]") {
+    int top = get_top(
+        "8 2 /"
+    );
+    REQUIRE(top == 4);
+}
+
+TEST_CASE("less than when less", "[less than]") {
+    int top = get_top(
+        "3 4 <"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("less than when equal") {
+    int top = get_top(
+        "7 7 <"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("less than when greater") {
+    int top = get_top(
+        "5 4 <"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("greater than when greater", "[greater than]") {
+    int top = get_top(
+        "8 7 >"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("greater than when equal") {
+    int top = get_top(
+        "7 7 >"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("greater than when less") {
+    int top = get_top(
+        "1 2 >"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("equal to") {
+    int top = get_top(
+        "2 2 ="
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("equal to fails") {
+    int top = get_top(
+        "2 3 ="
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("not equal to") {
+    int top = get_top(
+        "2 3 = !"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("not false") {
+    int top = get_top(
+        "0 !"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("not true") {
+    int top = get_top(
+        "1 !"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("not equal to fails") {
+    int top = get_top(
+        "2 2 = !"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("not with no operand") {
+    int exit_code = get_exit_code(
+        "!"
+    );
+    REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("not not false") {
+    int top = get_top(
+        "0 ! !"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("not not true") {
+    int top = get_top(
+        "1 ! !"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("or true") {
+    int top = get_top(
+        "1 1 |"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("or false") {
+    int top = get_top(
+        "0 1 |"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("or false 2") {
+    int top = get_top(
+        "1 0 |"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("or false 3") {
+    int top = get_top(
+        "0 0 |"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("or with no operand") {
+    int exit_code = get_exit_code(
+        "|"
+    );
+    REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("and true") {
+    int top = get_top(
+        "1 1 &"
+    );
+    REQUIRE(top == 1);
+}
+
+TEST_CASE("and false") {
+    int top = get_top(
+        "0 1 &"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("and false 2") {
+    int top = get_top(
+        "1 0 &"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("and false 3") {
+    int top = get_top(
+        "0 0 &"
+    );
+    REQUIRE(top == 0);
+}
+
+TEST_CASE("and with no operand") {
+    int exit_code = get_exit_code(
+        "&"
+    );
+    REQUIRE(exit_code == 1);
+}

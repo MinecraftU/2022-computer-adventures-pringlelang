@@ -1,11 +1,10 @@
 #pragma once
-#ifndef _PARSER_HPP_
-#define _PARSER_HPP_
 
-#include "../inc/source_code.hpp"
+#include "source_code.hpp"
 
 struct Parser {
     private:
+    std::unordered_set<int> operators = {'+', '-', '*', '/', '^', '%', '=', '<', '>', '!', '|', '&'};
 
     std::string identifier_str; // Filled in if tok_identifier
     int num_val;             // Filled in if tok_number
@@ -23,6 +22,11 @@ struct Parser {
     std::stack<int> get_stack() {
         return tokens;
     }
-};
 
-#endif // _PARSER_HPP_
+    int try_peek(){
+        if (tokens.empty())
+            throw std::runtime_error("Cannot peek empty stack");
+        return tokens.top();
+    }
+
+};
