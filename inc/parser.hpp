@@ -9,17 +9,22 @@ struct Parser {
     std::string identifier_str; // Filled in if tok_identifier
     int num_val;             // Filled in if tok_number
 
-    std::stack<int> tokens;
-    std::map<std::string, SourceCode> functions;
-    std::map<std::string, int> variables;
+    //TODO: consider changing the underlying container to check what performs best
+    std::stack<int> stack;
+    std::unordered_map<std::string, SourceCode> functions;
+    std::unordered_map<std::string, int> variables;
 
-    std::map<std::string, Token> command_to_token = {
+    std::unordered_map<std::string, Token> command_to_token = {
         {"print", tok_print},
         {"func", tok_func},
         {"var", tok_var},
         {"loop", tok_loop},
         {"break", tok_break},
-        {"if", tok_if}
+        {"if", tok_if},
+        {"dup", tok_dup},
+        {"swap", tok_swap},
+        {"over", tok_over},
+        {"twodup", tok_twodup}
     };
 
     public:
@@ -29,13 +34,13 @@ struct Parser {
     int parse(SourceCode &src);
  
     std::stack<int> get_stack() {
-        return tokens;
+        return stack;
     }
 
     int try_peek(){
-        if (tokens.empty())
+        if (stack.empty())
             throw std::runtime_error("Cannot peek empty stack");
-        return tokens.top();
+        return stack.top();
     }
 
 };

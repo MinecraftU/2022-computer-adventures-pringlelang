@@ -1,6 +1,13 @@
-0 VAR x
-
-LOOP {
-    x
-    BREAK
-}x print
+2 dup
+loop {
+    swap
+    loop {
+        twodup
+        % 0 = if {
+            break
+        }
+    }
+    1 +
+    dup
+    100 = if {break}
+}

@@ -12,6 +12,14 @@ int get_top(std::string raw_src) {
     return parser.try_peek();
 }
 
+std::stack<int> get_stack(std::string raw_src) { 
+    Parser parser;
+    SourceCode src = SourceCode(raw_src);
+    parser.parse(src);
+
+    return parser.get_stack();
+}
+
 int get_exit_code(std::string raw_src) {
     Parser parser;
     SourceCode src = SourceCode(raw_src);
@@ -434,4 +442,62 @@ TEST_CASE("and with no operand") {
         "&"
     );
     REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("dup", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 dup"
+    ));
+    
+    REQUIRE(s.top() == 1);
+    s.pop();
+    REQUIRE(s.top() == 1);
+}
+
+TEST_CASE("dup 2", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 dup"
+    ));
+    
+    REQUIRE(s.top() == 2);
+    s.pop();
+    REQUIRE(s.top() == 2);
+    s.pop();
+    REQUIRE(s.top() == 1);
+}
+
+TEST_CASE("swap", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 swap"
+    ));
+    
+    REQUIRE(s.top() == 1);
+    s.pop();
+    REQUIRE(s.top() == 2);
+}
+
+TEST_CASE("twodup", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 twodup"
+    ));
+    
+    REQUIRE(s.top() == 2);
+    s.pop();
+    REQUIRE(s.top() == 1);
+    s.pop();
+    REQUIRE(s.top() == 2);
+    s.pop();
+    REQUIRE(s.top() == 1);
+}
+
+TEST_CASE("over", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 3 over"
+    ));
+    
+    REQUIRE(s.top() == 1);
+    s.pop();
+    REQUIRE(s.top() == 3);
+    s.pop();
+    REQUIRE(s.top() == 2);
 }

@@ -4,11 +4,11 @@
 #include <iostream>
 #include <fstream>
 #include <streambuf>
-#include <map>
 #include <stack>
 #include <vector>
 #include <cmath>
 #include <unordered_set>
+#include <unordered_map>
 
 enum Token
 {
@@ -25,6 +25,12 @@ enum Token
     // primary
     tok_identifier = -8,
     tok_number = -9,
+
+    //stack commands
+    tok_dup = -10,
+    tok_swap = -11,
+    tok_over = -12,
+    tok_twodup = -13,
 };
 
 struct SourceCode

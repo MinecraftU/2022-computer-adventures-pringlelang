@@ -61,6 +61,7 @@ int Parser::parse(SourceCode &src)
     int token = gettok(src);
     while (token != -1)
     {
+        int x, y, z;
         // for functions/operators
         std::vector<int> args;
         // for case tok_func
@@ -72,11 +73,41 @@ int Parser::parse(SourceCode &src)
         std::string inside_src = "";
         // for case tok_loop
         SourceCode new_src;
+        // TODO: throw if size of stack not ok for token type (unary op, binary op, etc) - ignore if function
         switch (token)
         {
+        case tok_dup:
+            stack.push(stack.top());
+            break;
+        case tok_twodup:
+            x = stack.top();
+            stack.pop();
+            y = stack.top();
+            stack.push(x);
+            stack.push(y);
+            stack.push(x);
+            break;
+        case tok_swap:
+            x = stack.top();
+            stack.pop();
+            y = stack.top();
+            stack.pop();
+            stack.push(x);
+            stack.push(y);
+            break;
+        case tok_over:
+            x = stack.top();
+            stack.pop();
+            y = stack.top();
+            stack.pop();
+            z = stack.top();
+            stack.push(y);
+            stack.push(x);
+            stack.push(z);
+            break;
         case tok_print:
-            args.push_back(tokens.top());
-            tokens.pop();
+            args.push_back(stack.top());
+            stack.pop();
             std::cout << args[0];
             break;
         case tok_func:
@@ -111,9 +142,8 @@ int Parser::parse(SourceCode &src)
                 std::cout << "Name Error: invalid identifier name.\n";
                 return 1;
             }
-
-            args.push_back(tokens.top());
-            tokens.pop();
+            args.push_back(stack.top());
+            stack.pop();
             variables[identifier_str] = args[0];
             break;
         case tok_loop:
@@ -137,6 +167,8 @@ int Parser::parse(SourceCode &src)
         case tok_break:
             return 2;
             break;
+        //TODO: refactor this for performance by jumping to closing bracket on false
+        // instead of expensive recursive call to parse
         case tok_if:
             c = src.get_char();
             while (b_count != 0) {
@@ -148,8 +180,8 @@ int Parser::parse(SourceCode &src)
             }
             inside_src.pop_back();
 
-            args.push_back(tokens.top());
-            tokens.pop();
+            args.push_back(stack.top());
+            stack.pop();
             if (args[0] > 0)
             {
                 new_src = SourceCode(inside_src);
@@ -164,8 +196,8 @@ int Parser::parse(SourceCode &src)
                 std::vector<std::string> str_args;
                 for (size_t i = 0; i < functions[identifier_str].get_arg_names().size(); i++)
                 {
-                    str_args.push_back(std::to_string(tokens.top()));
-                    tokens.pop();
+                    str_args.push_back(std::to_string(stack.top()));
+                    stack.pop();
                 }
                 std::reverse(str_args.begin(), str_args.end());
 
@@ -175,7 +207,7 @@ int Parser::parse(SourceCode &src)
             }
             else if (variables.count(identifier_str))
             { // if identifier_str is a key in functions
-                tokens.push(variables[identifier_str]);
+                stack.push(variables[identifier_str]);
             }
             else
             {
@@ -184,7 +216,7 @@ int Parser::parse(SourceCode &src)
             }
             break;
         case tok_number:
-            tokens.push(num_val);
+            stack.push(num_val);
             break;
         default: // operator or unrecognized character
             if (operators.find(token) == operators.end())
@@ -192,7 +224,7 @@ int Parser::parse(SourceCode &src)
                 std::cout << "Syntax Error: unrecognized character: \"" << char(token) << "\".\n";
                 return 1;
             }
-            if (tokens.size() < 2 && token != '!')
+            if (stack.size() < 2 && token != '!')
             {
                 std::cout << "Error: not enough operands in stack.\n";
                 return 1;
@@ -200,89 +232,67 @@ int Parser::parse(SourceCode &src)
             switch (token)
             {
             case '+':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] + args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top() += x;
                 break;
             case '*':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] * args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top() *= x;
                 break;
             case '-':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] - args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top() -= x;
                 break;
             case '/':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] / args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top() /= x;
                 break;
             case '%':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] % args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top()  %= x;
                 break;
             case '^':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(pow(args[1], args[0]));
+                x = stack.top();
+                stack.pop();
+                stack.top() = pow(stack.top(), x);
                 break;
             case '<':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] < args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top() = stack.top() < x;
                 break;
             case '>':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] > args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top() = stack.top() > x;
                 break;
             case '=':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] == args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top() = stack.top() == x;
                 break;
             case '&':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] && args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top() = stack.top() && x;
                 break;
             case '|':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] || args[0]);
+                x = stack.top();
+                stack.pop();
+                stack.top() = stack.top() || x;
                 break;
             case '!':
-                if (tokens.empty())
+                if (stack.empty())
                 {
                     std::cout << "Error: no operand in stack.\n";
                     return 1;
                 }
-                tokens.top() = !tokens.top();
+                stack.top() = !stack.top();
                 break;
             }
         }
