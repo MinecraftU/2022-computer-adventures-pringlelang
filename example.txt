@@ -1,6 +1,6 @@
-0 VAR x
+"
+" var newline
 
-LOOP {
-    x
-    BREAK
-}x print
+"Hello, world!" newline + print
+
+"ab" "abc" 2 . + print

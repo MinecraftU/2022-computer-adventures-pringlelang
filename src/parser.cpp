@@ -23,7 +23,7 @@ int Parser::gettok(SourceCode &src)
     }
 
     if (isdigit(last_char))
-    { // Number: [0-9.]+
+    { // Number: [0-9]+
         std::string NumStr;
         do
         {
@@ -33,6 +33,19 @@ int Parser::gettok(SourceCode &src)
 
         num_val = std::stoi(NumStr);
         return tok_number;
+    }
+
+    if (last_char == '"') {
+        std::string str;
+        last_char = src.get_char();
+        do
+        {
+            str += last_char;
+            last_char = src.get_char();
+        } while (last_char != '"');
+
+        str_val = str;
+        return tok_string;
     }
 
     if (last_char == '#')
@@ -62,7 +75,7 @@ int Parser::parse(SourceCode &src)
     while (token != -1)
     {
         // for functions/operators
-        std::vector<int> args;
+        std::vector<Value> args;
         // for case tok_func
         char c = ' ';
         int b_count = 1; // unmatched bracket pair count
@@ -75,8 +88,8 @@ int Parser::parse(SourceCode &src)
         switch (token)
         {
         case tok_print:
-            args.push_back(tokens.top());
-            tokens.pop();
+            args.push_back(values.top());
+            values.pop();
             std::cout << args[0];
             break;
         case tok_func:
@@ -112,8 +125,8 @@ int Parser::parse(SourceCode &src)
                 return 1;
             }
 
-            args.push_back(tokens.top());
-            tokens.pop();
+            args.push_back(values.top());
+            values.pop();
             variables[identifier_str] = args[0];
             break;
         case tok_loop:
@@ -148,9 +161,9 @@ int Parser::parse(SourceCode &src)
             }
             inside_src.pop_back();
 
-            args.push_back(tokens.top());
-            tokens.pop();
-            if (args[0] > 0)
+            args.push_back(values.top());
+            values.pop();
+            if (args[0].get_int() > 0)
             {
                 new_src = SourceCode(inside_src);
                 if (parse(new_src) != 0)
@@ -164,8 +177,8 @@ int Parser::parse(SourceCode &src)
                 std::vector<std::string> str_args;
                 for (size_t i = 0; i < functions[identifier_str].get_arg_names().size(); i++)
                 {
-                    str_args.push_back(std::to_string(tokens.top()));
-                    tokens.pop();
+                    str_args.push_back(values.top().to_string());
+                    values.pop();
                 }
                 std::reverse(str_args.begin(), str_args.end());
 
@@ -175,7 +188,7 @@ int Parser::parse(SourceCode &src)
             }
             else if (variables.count(identifier_str))
             { // if identifier_str is a key in functions
-                tokens.push(variables[identifier_str]);
+                values.push(variables[identifier_str]);
             }
             else
             {
@@ -184,7 +197,10 @@ int Parser::parse(SourceCode &src)
             }
             break;
         case tok_number:
-            tokens.push(num_val);
+            values.push(num_val);
+            break;
+        case tok_string:
+            values.push(str_val);
             break;
         default: // operator or unrecognized character
             if (operators.find(token) == operators.end())
@@ -192,97 +208,110 @@ int Parser::parse(SourceCode &src)
                 std::cout << "Syntax Error: unrecognized character: \"" << char(token) << "\".\n";
                 return 1;
             }
-            if (tokens.size() < 2 && token != '!')
+            if (values.size() < 2 && token != '!')
             {
                 std::cout << "Error: not enough operands in stack.\n";
                 return 1;
             }
             switch (token)
             {
+            case '.':
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_string()[args[0].get_int()]));
+                break;
             case '+':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] + args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                if (args[1].get_type() == type_int && args[0].get_type() == type_int) {
+                    values.push(Value(args[1].get_int() + args[0].get_int()));
+                } else if (args[1].get_type() == type_string && args[0].get_type() == type_string) {
+                    values.push(Value(args[1].get_string() + args[0].get_string()));
+                } else {
+                    std::cout << "Argument Error: incorrect argument types (did not get two ints or two strings)!";
+                }
                 break;
             case '*':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] * args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_int() * args[0].get_int()));
                 break;
             case '-':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] - args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_int() - args[0].get_int()));
                 break;
             case '/':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] / args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_int() / args[0].get_int()));
                 break;
             case '%':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] % args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_int() % args[0].get_int()));
                 break;
             case '^':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(pow(args[1], args[0]));
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value((int) pow(args[1].get_int(), args[0].get_int()))); // coerce double to int by flooring
                 break;
             case '<':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] < args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_int() < args[0].get_int()));
                 break;
             case '>':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] > args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_int() > args[0].get_int()));
                 break;
             case '=':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] == args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_int() == args[0].get_int()));
                 break;
             case '&':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] && args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_int() && args[0].get_int()));
                 break;
             case '|':
-                args.push_back(tokens.top());
-                tokens.pop();
-                args.push_back(tokens.top());
-                tokens.pop();
-                tokens.push(args[1] || args[0]);
+                args.push_back(values.top());
+                values.pop();
+                args.push_back(values.top());
+                values.pop();
+                values.push(Value(args[1].get_int() || args[0].get_int()));
                 break;
             case '!':
-                if (tokens.empty())
+                if (values.empty())
                 {
                     std::cout << "Error: no operand in stack.\n";
                     return 1;
                 }
-                tokens.top() = !tokens.top();
+                values.top() = !values.top().get_int();
                 break;
             }
         }
