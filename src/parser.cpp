@@ -17,18 +17,9 @@ int Parser::gettok(SourceCode &src)
         {
             identifier_str += last_char;
         }
-        if (identifier_str == "print")
-            return tok_print;
-        if (identifier_str == "FUNC")
-            return tok_func;
-        if (identifier_str == "VAR")
-            return tok_var;
-        if (identifier_str == "LOOP")
-            return tok_loop;
-        if (identifier_str == "BREAK")
-            return tok_break;
-        if (identifier_str == "IF")
-            return tok_if;
+        auto tok = command_to_token.find(identifier_str);
+        if (tok != command_to_token.end())
+            return tok->second;
         return tok_identifier;
     }
 
@@ -164,25 +155,27 @@ int Parser::parse(SourceCode &src)
                 if (parse(new_src) != 0) return 2;
             }
             break;
-        case tok_identifier:
-            if (functions.count(identifier_str))
+        case tok_identifier: {
+            auto tok_func_id = functions.find(identifier_str);
+            auto tok_var_id = variables.find(identifier_str);
+            if (tok_func_id != functions.end())
             { // if identifier_str is a key in functions
-                functions[identifier_str].reset_idx();
+                tok_func_id->second.reset_idx();
                 std::vector<std::string> str_args;
-                for (size_t i = 0; i < functions[identifier_str].get_arg_names().size(); i++)
+                for (size_t i = 0; i < tok_func_id->second.get_arg_names().size(); i++)
                 {
                     str_args.push_back(std::to_string(tokens.top()));
                     tokens.pop();
                 }
                 std::reverse(str_args.begin(), str_args.end());
-
-                std::string replaced_raw = functions[identifier_str].replace_args(str_args);
+                std::string replaced_raw = tok_func_id->second.replace_args(str_args);
                 SourceCode replaced = std::move(SourceCode(replaced_raw));
+
                 parse(replaced);
             }
-            else if (variables.count(identifier_str))
+            else if (tok_var_id != variables.end())
             { // if identifier_str is a key in functions
-                tokens.push(variables[identifier_str]);
+                tokens.push(tok_var_id->second);
             }
             else
             {
@@ -190,7 +183,7 @@ int Parser::parse(SourceCode &src)
                 return 1;
             }
             break;
-        case tok_number:
+        } case tok_number:
             tokens.push(num_val);
             break;
         default: // operator or unrecognized character
