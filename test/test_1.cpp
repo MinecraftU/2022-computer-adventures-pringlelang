@@ -52,7 +52,7 @@ TEST_CASE("Math expression is computed", "[math expression]") {
 
 TEST_CASE("Function is delcared and called", "[function]") {
     int exit_code = get_exit_code(
-        "FUNC printSeven {"
+        "func printSeven {"
         "    7 print"
         "}"
         "printSeven"
@@ -62,7 +62,7 @@ TEST_CASE("Function is delcared and called", "[function]") {
 
 TEST_CASE("Function with return value is computed", "[function return]") {
     int top = get_top(
-        "FUNC seven {"
+        "func seven {"
         "    7"
         "}"
         "seven"
@@ -72,7 +72,7 @@ TEST_CASE("Function with return value is computed", "[function return]") {
 
 TEST_CASE("Function with return value and arguments is computed", "[function arguments]") {
     int top = get_top(
-        "FUNC sum4 a b c d {"
+        "func sum4 a b c d {"
         "    a b + c + d +"
         "}"
         "1 2 3 4 sum4"
@@ -82,9 +82,9 @@ TEST_CASE("Function with return value and arguments is computed", "[function arg
 
 TEST_CASE("Nested functions throws no errors", "[nested functions]") {
     int top = get_top(
-        "FUNC p {"
-        "    FUNC q {"
-        "        FUNC r {"
+        "func p {"
+        "    func q {"
+        "        func r {"
         "            8"
         "        }"
         "        r"
@@ -98,7 +98,7 @@ TEST_CASE("Nested functions throws no errors", "[nested functions]") {
 
 TEST_CASE("Variables can be assigned and used", "[variables]") {
     int top = get_top(
-        "10 VAR x "
+        "10 var x "
         "1 x +"
     );
     REQUIRE(top == 11);
@@ -106,8 +106,8 @@ TEST_CASE("Variables can be assigned and used", "[variables]") {
 
 TEST_CASE("Variables can be reassigned", "[variable ressignment]") {
     int top = get_top(
-        "10 VAR x "
-        "x 1 + VAR x "
+        "10 var x "
+        "x 1 + var x "
         "x"
     );
     REQUIRE(top == 11);
@@ -115,7 +115,7 @@ TEST_CASE("Variables can be reassigned", "[variable ressignment]") {
 
 TEST_CASE("Variables can be assigned and used inside functions", "[variables in functions]") {
     int top = get_top(
-        "FUNC seven {7 VAR x x} seven"
+        "func seven {7 var x x} seven"
     );
 
     REQUIRE(top == 7);
@@ -123,8 +123,8 @@ TEST_CASE("Variables can be assigned and used inside functions", "[variables in 
 
 TEST_CASE("Incorrect amount of brackets throws error", "[bracket error]") {
     int exit_code = get_exit_code(
-        "FUNC seven {"
-        "    7 VAR my_var}"
+        "func seven {"
+        "    7 var my_var}"
         "    my_var"
         "}"
         "seven"
@@ -134,8 +134,8 @@ TEST_CASE("Incorrect amount of brackets throws error", "[bracket error]") {
 
 TEST_CASE("Incorrect bracket placement throws error", "[bracket error 2]") {
     int exit_code = get_exit_code(
-        "FUNC seven {"
-        "    7 VAR }{my_var}"
+        "func seven {"
+        "    7 var }{my_var}"
         "    my_var"
         "}"
         "seven"
@@ -145,8 +145,8 @@ TEST_CASE("Incorrect bracket placement throws error", "[bracket error 2]") {
 
 TEST_CASE("Variables inside functions can be redefined", "[variable redefinition]") {
     int top = get_top(
-        "FUNC seven {7 VAR x x} seven\n"
-        "FUNC eight {8 VAR x x} eight"
+        "func seven {7 var x x} seven\n"
+        "func eight {8 var x x} eight"
     );
 
     REQUIRE(top == 8);
@@ -154,10 +154,10 @@ TEST_CASE("Variables inside functions can be redefined", "[variable redefinition
 
 TEST_CASE("Infinite loop can be broken out of", "[infinite loop break]") {
     int top = get_top(
-        "0 VAR x "
-        "LOOP {"
+        "0 var x "
+        "loop {"
         "    x"
-        "    BREAK"
+        "    break"
         "}"
         "x print"
     );
@@ -167,7 +167,7 @@ TEST_CASE("Infinite loop can be broken out of", "[infinite loop break]") {
 TEST_CASE("If statement works with 1 coerced to true", "[if statement]") {
     int top = get_top(
         "0 "
-        "1 IF {"
+        "1 if {"
         "    1 1 + 1 -"
         "}"
     );
@@ -177,7 +177,7 @@ TEST_CASE("If statement works with 1 coerced to true", "[if statement]") {
 TEST_CASE("If statement works with 12394 coerced to true", "[if statement 2]") {
     int top = get_top(
         "0 "
-        "12 1000 * 394 + IF { 1 1 * 1 * }"
+        "12 1000 * 394 + if { 1 1 * 1 * }"
     );
     REQUIRE(top == 1);
 }
@@ -185,7 +185,7 @@ TEST_CASE("If statement works with 12394 coerced to true", "[if statement 2]") {
 TEST_CASE("If statement works with 0 coerced to false", "[if statement 3]") {
     int top = get_top(
         "0 "
-        "0 IF {"
+        "0 if {"
         "    1 3 + 3 -"
         "}"
     );
@@ -194,11 +194,11 @@ TEST_CASE("If statement works with 0 coerced to false", "[if statement 3]") {
 
 TEST_CASE("If statement works inside loop", "[if statement in loop]") {
     int top = get_top(
-        "0 5 - VAR x "
-        "LOOP {"
+        "0 5 - var x "
+        "loop {"
         "    x"
-        "    x IF {BREAK}"
-        "    x 1 + VAR x "
+        "    x if {break}"
+        "    x 1 + var x "
         "    x print"
         "}"
     );

@@ -13,6 +13,15 @@ struct Parser {
     std::map<std::string, SourceCode> functions;
     std::map<std::string, int> variables;
 
+    std::map<std::string, Token> command_to_token = {
+        {"print", tok_print},
+        {"func", tok_func},
+        {"var", tok_var},
+        {"loop", tok_loop},
+        {"break", tok_break},
+        {"if", tok_if}
+    };
+
     public:
 
     int gettok(SourceCode &src);
