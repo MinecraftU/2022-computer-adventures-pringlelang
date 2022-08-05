@@ -435,3 +435,31 @@ TEST_CASE("and with no operand") {
     );
     REQUIRE(exit_code == 1);
 }
+
+TEST_CASE("string gets pushed to stack correctly") {
+    Value top = get_top(
+        "\"abcdefg\""
+    );
+    REQUIRE(top == "abcdefg");
+}
+
+TEST_CASE("string can be printed") {
+    int exit_code = get_exit_code(
+        "\"Hello, world!\" print"
+    );
+    REQUIRE(exit_code == 0);
+}
+
+TEST_CASE("strings can get concatenated with +") {
+    Value top = get_top(
+        "\"amo\" \"gus\" +"
+    );
+    REQUIRE(top == "amogus");
+}
+
+TEST_CASE("can access character of the string at index") {
+    Value top = get_top(
+        "\"qwerty\" 2 ."
+    );
+    REQUIRE(top == "e");
+}
