@@ -2,7 +2,16 @@
 
 An interpreted, procedural, [stack-based](https://en.wikipedia.org/wiki/Stack-oriented_programming), [reverse Polish notation](https://en.wikipedia.org/wiki/Reverse_Polish_notation) programming language.
 
-**Note that the README is a work in progress. It is not completely accurate.**
+#### :memo: **note:** this README is a work in progress. Some features detailed here may still be in development
+
+
+
+## How to building and run pringle
+1.
+2.
+3.
+
+
 
 ## Syntax
 ### Example expressions 
@@ -11,6 +20,7 @@ An interpreted, procedural, [stack-based](https://en.wikipedia.org/wiki/Stack-or
 * `func square x { x x * }`
 
 A typical pringlelang expression looks like `arg1 arg2 ... argN function`, where the arguments are other expressions; or values, which are integers ``/\d+/``, strings ``/".*"/``, or identifiers (variable or function) ``/[a-zA-Z]\w*/``. For special functions, there may be trailing special statements (e.g. in `2 var x`, x is a special statement, in `loop {...}`, the curly braces with the expressions inside them is a special statement).
+  
   
 ### Operators
 #### Math
@@ -33,6 +43,7 @@ Similar to [Forth](https://www.forth.com/starting-forth/2-stack-manipulation-ope
 - ``swap`` swap the positions of the top two elements on the stack
 - ``over`` move the third element to the top of the stack
 
+
 ### Types
 Currently there are three types of values that can be represented in pringle:
 - strings
@@ -44,22 +55,36 @@ Currently there are three types of values that can be represented in pringle:
   - see integers
 
 ### Variables
-You must declare and assign a variable at the same time. The result of the expression before the `var` function/keyword is the value of the variable and the special statement after `var` is the variable name (which must be in the form of an identifier). Example: `3 4 + var n` will assign the value `7` to the variable `n`. Note that all variables are in the global scope.
+You must declare and assign a variable at the same time. The expression before the `var` function/keyword is the value of the variable and the identifier after `var` is the variable's name. Note that all variables are in the global scope.
+* variable declaration and use example: 
+```
+3 4 + var n 
+```
+*assigns the value 7 to the variable n*
+
+```
+n print
+```
+*outputs 7*
+
 
 ### Functions
 You declare functions in the form `func arg1 arg2 ... argN {...}`. `func` is the function declaration keyword, and it's followed by space separated args (these args will be replaced with their actual values when the function is called), which is followed by the function body wrapped in curly braces. You can return values just by adding them to the stack.
 
+
 ### If statements
 Add an if statement by using `expr if {...}`. expr here would be an expression that would be coerced into a boolean by if. If that boolean is true, the if body wrapped in curly braces will run.
+
 
 ### Loops
 Add an infinite loop by using `loop {...}`. `loop` is the infinite loop function/keyword, and it's followed by the loop body wrapped in curly braces. Use the `break` keyword to break out of the infinite loop.
 * for loop example
-```1 var flag
+```
+1 var flag
     loop {
       flag print
       flag 1 + var flag
       flag 10 = if {break}
     }
-    # outputs 123456789
-  ```
+ ```
+*outputs 123456789*
