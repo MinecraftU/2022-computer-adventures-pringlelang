@@ -88,3 +88,13 @@ Add an infinite loop by using `loop {...}`. `loop` is the infinite loop function
     }
  ```
 *outputs 123456789*
+* same example using a stack-oriented programming approach
+```
+1
+loop {
+    dup print
+    1 +
+    dup 10 = if {break}
+}
+```
+*outputs 123456789*
