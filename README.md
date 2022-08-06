@@ -6,7 +6,7 @@ An interpreted, procedural, [stack-based](https://en.wikipedia.org/wiki/Stack-or
 
 
 
-## How to building and run pringle
+## How to build and run pringle
 1.
 2.
 3.
