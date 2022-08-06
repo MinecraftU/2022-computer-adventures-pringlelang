@@ -101,4 +101,5 @@ loop {
 
 ### Comments
 Comments in pringle work the same way as python single line comments
+
 ```# this is a comment and everything written after the "#" on this line will be ignored```
