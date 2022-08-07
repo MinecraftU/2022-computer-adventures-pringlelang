@@ -31,7 +31,8 @@ enum Token
     tok_swap = -11,
     tok_over = -12,
     tok_twodup = -13,
-    tok_string = -14,
+    tok_pop = -14,
+    tok_string = -15,
 };
 
 struct SourceCode

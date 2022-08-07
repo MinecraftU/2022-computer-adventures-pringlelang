@@ -25,7 +25,8 @@ struct Parser {
         {"dup", tok_dup},
         {"swap", tok_swap},
         {"over", tok_over},
-        {"twodup", tok_twodup}
+        {"twodup", tok_twodup},
+        {"pop", tok_pop},
     };
 
     public:
