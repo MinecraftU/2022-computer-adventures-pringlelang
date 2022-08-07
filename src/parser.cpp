@@ -17,8 +17,9 @@ int Parser::gettok(SourceCode &src)
         {
             identifier_str += last_char;
         }
-        if (command_to_token.count(identifier_str))
-            return command_to_token[identifier_str];
+        auto tok = command_to_token.find(identifier_str);
+        if (tok != command_to_token.end())
+            return tok->second;
         return tok_identifier;
     }
 
@@ -152,8 +153,7 @@ int Parser::parse(SourceCode &src)
                 if (c == '}') b_count--;
             }
             inside_src.pop_back();
-
-            functions[name] = SourceCode(inside_src, arg_names);
+            functions[name] = std::move(SourceCode(inside_src, arg_names));
             break;
         case tok_var:
             if (gettok(src) != tok_identifier) {
@@ -174,11 +174,11 @@ int Parser::parse(SourceCode &src)
                 if (c == '}') b_count--;
             }
             inside_src.pop_back();
-            new_src = SourceCode(inside_src);
-            while (true)
-            {
-                if (parse(new_src) != 0)
-                    break;
+
+            new_src = std::move(SourceCode(inside_src));
+            while (true) {
+                if (parse(new_src) != 0) break;
+
                 new_src.reset_idx();
             }
             break;
@@ -199,31 +199,31 @@ int Parser::parse(SourceCode &src)
             inside_src.pop_back();
             args.push_back(stack.top());
             stack.pop();
-            if (args[0].get_int() > 0)
-
-            {
+            if (args[0].get_int() > 0){
                 new_src = SourceCode(inside_src);
                 if (parse(new_src) != 0)
                     return 2;
             }
             break;
-        case tok_identifier:
-            if (functions.count(identifier_str))
+        case tok_identifier: {
+            auto tok_func_id = functions.find(identifier_str);
+            auto tok_var_id = variables.find(identifier_str);
+            if (tok_func_id != functions.end())
             { // if identifier_str is a key in functions
-                functions[identifier_str].reset_idx();
+                tok_func_id->second.reset_idx();
                 std::vector<std::string> str_args;
-                for (size_t i = 0; i < functions[identifier_str].get_arg_names().size(); i++)
+                for (size_t i = 0; i < tok_func_id->second.get_arg_names().size(); i++)
                 {
                     str_args.push_back(stack.top().to_string());
                     stack.pop();
                 }
                 std::reverse(str_args.begin(), str_args.end());
+                std::string replaced_raw = tok_func_id->second.replace_args(str_args);
+                SourceCode replaced = std::move(SourceCode(replaced_raw));
 
-                std::string replaced_raw = functions[identifier_str].replace_args(str_args);
-                SourceCode replaced = SourceCode(replaced_raw);
                 parse(replaced);
             }
-            else if (variables.count(identifier_str))
+            else if (tok_var_id != variables.end())
             { // if identifier_str is a key in functions
                 stack.push(variables[identifier_str]);
             }

@@ -1,6 +1,6 @@
 #include "../inc/source_code.hpp"
 
-std::string SourceCode::replace_args(std::vector<std::string> args) {
+std::string SourceCode::replace_args(const std::vector<std::string>& args) {
     if (args.size() != arg_names.size()) {
         std::cout << "Argument Error: Incorrect amount of aruments (expected " << arg_names.size() << " arguments, got " << args.size() << " arguments).";
     }
@@ -17,5 +17,5 @@ std::string SourceCode::replace_args(std::vector<std::string> args) {
         }
     }
 
-    return ret;
+    return std::move(ret);
 }
