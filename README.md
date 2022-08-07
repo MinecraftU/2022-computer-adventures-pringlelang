@@ -106,3 +106,16 @@ loop {
 Comments in pringle work the same way as python single line comments
 
 ```# this is a comment and everything written after the "#" on this line will be ignored```
+
+
+
+## Future Goals
+
+- Work on AST branch as a compiled language
+- Do some profiling to see where we can optimize more
+- Implement arrays
+- add scoping
+- consistent error checking
+- rewrite interpreter in rust (maybe)
+- debugger
+- vscode syntax highlighting
