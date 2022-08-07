@@ -510,7 +510,7 @@ TEST_CASE("string gets pushed to stack correctly") {
 
 TEST_CASE("string can be printed") {
     int exit_code = get_exit_code(
-        "\"Hello, world!\" print"
+        "\"Hello, world!\n\" print"
     );
     REQUIRE(exit_code == 0);
 }
@@ -527,4 +527,22 @@ TEST_CASE("can access character of the string at index") {
         "\"qwerty\" 2 ."
     );
     REQUIRE(top == "e");
+}
+
+TEST_CASE("pop", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 pop"
+    ));
+    REQUIRE(s.top().get_int() == 1);
+}
+
+TEST_CASE("pop with strings", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "\"abc\" \"def\" pop"
+    ));
+    REQUIRE(s.top().get_string() == "abc");
+}
+
+TEST_CASE("pop with empty stack", "[Stack manipulation]") {
+    REQUIRE_THROWS_AS(get_exit_code("pop"), std::logic_error);
 }

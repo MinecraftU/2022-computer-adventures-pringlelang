@@ -74,19 +74,6 @@ int Parser::parse(SourceCode &src)
     int token = gettok(src);
     while (token != -1)
     {
-        //FIXME: remove this debug output
-        // print out the whole stack
-        // std::cout << "stack: ";
-        // auto s_copy = get_stack();
-        // std::string out = "";
-        // while (!s_copy.empty())
-        // {
-        //     out += s_copy.top().to_string() + " ";
-        //     s_copy.pop();
-        // }
-        // std::reverse(out.begin(), out.end());
-        // std::cout << out << std::endl;
-
         Value x, y, z;
         // for functions/operators
         std::vector<Value> args;
@@ -104,7 +91,7 @@ int Parser::parse(SourceCode &src)
         {
         case tok_pop:
             if (stack.empty())
-                throw std::runtime_error("Cannot pop empty stack");
+                throw std::logic_error("Cannot pop empty stack");
             stack.pop();
             break;
         case tok_dup:
