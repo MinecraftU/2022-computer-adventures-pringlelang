@@ -23,7 +23,7 @@ int Parser::gettok(SourceCode &src)
     }
 
     if (isdigit(last_char))
-    { // Number: [0-9.]+
+    { // Number: [0-9]+
         std::string NumStr;
         do
         {
@@ -33,6 +33,19 @@ int Parser::gettok(SourceCode &src)
 
         num_val = std::stoi(NumStr);
         return tok_number;
+    }
+
+    if (last_char == '"') {
+        std::string str;
+        last_char = src.get_char();
+        do
+        {
+            str += last_char;
+            last_char = src.get_char();
+        } while (last_char != '"');
+
+        str_val = str;
+        return tok_string;
     }
 
     if (last_char == '#')
@@ -61,9 +74,22 @@ int Parser::parse(SourceCode &src)
     int token = gettok(src);
     while (token != -1)
     {
-        int x, y, z;
+        //FIXME: remove this debug output
+        // print out the whole stack
+        // std::cout << "stack: ";
+        // auto s_copy = get_stack();
+        // std::string out = "";
+        // while (!s_copy.empty())
+        // {
+        //     out += s_copy.top().to_string() + " ";
+        //     s_copy.pop();
+        // }
+        // std::reverse(out.begin(), out.end());
+        // std::cout << out << std::endl;
+
+        Value x, y, z;
         // for functions/operators
-        std::vector<int> args;
+        std::vector<Value> args;
         // for case tok_func
         char c = ' ';
         int b_count = 1; // unmatched bracket pair count
@@ -76,6 +102,11 @@ int Parser::parse(SourceCode &src)
         // TODO: throw if size of stack not ok for token type (unary op, binary op, etc) - ignore if function
         switch (token)
         {
+        case tok_pop:
+            if (stack.empty())
+                throw std::runtime_error("Cannot pop empty stack");
+            stack.pop();
+            break;
         case tok_dup:
             stack.push(stack.top());
             break;
@@ -179,10 +210,10 @@ int Parser::parse(SourceCode &src)
                 if (c == '}') b_count--;
             }
             inside_src.pop_back();
-
             args.push_back(stack.top());
             stack.pop();
-            if (args[0] > 0)
+            if (args[0].get_int() > 0)
+
             {
                 new_src = SourceCode(inside_src);
                 if (parse(new_src) != 0)
@@ -196,7 +227,7 @@ int Parser::parse(SourceCode &src)
                 std::vector<std::string> str_args;
                 for (size_t i = 0; i < functions[identifier_str].get_arg_names().size(); i++)
                 {
-                    str_args.push_back(std::to_string(stack.top()));
+                    str_args.push_back(stack.top().to_string());
                     stack.pop();
                 }
                 std::reverse(str_args.begin(), str_args.end());
@@ -218,6 +249,9 @@ int Parser::parse(SourceCode &src)
         case tok_number:
             stack.push(num_val);
             break;
+        case tok_string:
+            stack.push(str_val);
+            break;
         default: // operator or unrecognized character
             if (operators.find(token) == operators.end())
             {
@@ -231,60 +265,95 @@ int Parser::parse(SourceCode &src)
             }
             switch (token)
             {
-            case '+':
-                x = stack.top();
+            case '.':
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() += x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_string()[args[0].get_int()]));
+                break;
+            case '+':
+                args.push_back(stack.top());
+                stack.pop();
+                args.push_back(stack.top());
+                stack.pop();
+                if (args[1].get_type() == type_int && args[0].get_type() == type_int) {
+                    stack.push(Value(args[1].get_int() + args[0].get_int()));
+                } else if (args[1].get_type() == type_string && args[0].get_type() == type_string) {
+                    stack.push(Value(args[1].get_string() + args[0].get_string()));
+                } else {
+                    std::cout << "Argument Error: incorrect argument types (did not get two ints or two strings)!";
+                }
                 break;
             case '*':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() *= x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_int() * args[0].get_int()));
                 break;
             case '-':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() -= x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_int() - args[0].get_int()));
                 break;
             case '/':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() /= x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_int() / args[0].get_int()));
                 break;
             case '%':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top()  %= x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_int() % args[0].get_int()));
                 break;
             case '^':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() = pow(stack.top(), x);
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value((int) pow(args[1].get_int(), args[0].get_int()))); // coerce double to int by flooring
                 break;
             case '<':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() = stack.top() < x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_int() < args[0].get_int()));
                 break;
             case '>':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() = stack.top() > x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_int() > args[0].get_int()));
                 break;
             case '=':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() = stack.top() == x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_int() == args[0].get_int()));
                 break;
             case '&':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() = stack.top() && x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_int() && args[0].get_int()));
                 break;
             case '|':
-                x = stack.top();
+                args.push_back(stack.top());
                 stack.pop();
-                stack.top() = stack.top() || x;
+                args.push_back(stack.top());
+                stack.pop();
+                stack.push(Value(args[1].get_int() || args[0].get_int()));
                 break;
             case '!':
                 if (stack.empty())
@@ -292,7 +361,7 @@ int Parser::parse(SourceCode &src)
                     std::cout << "Error: no operand in stack.\n";
                     return 1;
                 }
-                stack.top() = !stack.top();
+                stack.top() = !stack.top().get_int();
                 break;
             }
         }
