@@ -104,8 +104,7 @@ int Parser::parse(SourceCode &src)
                 if (c == '}') b_count--;
             }
             inside_src.pop_back();
-
-            functions[name] = SourceCode(inside_src, arg_names);
+            functions[name] = std::move(SourceCode(inside_src, arg_names));
             break;
         case tok_var:
             if (gettok(src) != tok_identifier) {
@@ -127,11 +126,11 @@ int Parser::parse(SourceCode &src)
                 if (c == '}') b_count--;
             }
             inside_src.pop_back();
-            new_src = SourceCode(inside_src);
-            while (true)
-            {
-                if (parse(new_src) != 0)
-                    break;
+
+            new_src = std::move(SourceCode(inside_src));
+            while (true) {
+                if (parse(new_src) != 0) break;
+
                 new_src.reset_idx();
             }
             break;
@@ -151,16 +150,14 @@ int Parser::parse(SourceCode &src)
 
             args.push_back(tokens.top());
             tokens.pop();
-            if (args[0] > 0)
-            {
-                new_src = SourceCode(inside_src);
-                if (parse(new_src) != 0)
-                    return 2;
+            if (args[0] > 0) {
+                new_src = std::move(SourceCode(inside_src));
+                if (parse(new_src) != 0) return 2;
             }
             break;
         case tok_identifier: {
             auto tok_func_id = functions.find(identifier_str);
-            auto tok_var_id = variables.find(identifier_str);;
+            auto tok_var_id = variables.find(identifier_str);
             if (tok_func_id != functions.end())
             { // if identifier_str is a key in functions
                 tok_func_id->second.reset_idx();
@@ -171,9 +168,9 @@ int Parser::parse(SourceCode &src)
                     tokens.pop();
                 }
                 std::reverse(str_args.begin(), str_args.end());
-
                 std::string replaced_raw = tok_func_id->second.replace_args(str_args);
-                SourceCode replaced = SourceCode(replaced_raw);
+                SourceCode replaced = std::move(SourceCode(replaced_raw));
+
                 parse(replaced);
             }
             else if (tok_var_id != variables.end())

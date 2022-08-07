@@ -1,5 +1,4 @@
 # pringlelang
-
 An interpreted, procedural, [stack-based](https://en.wikipedia.org/wiki/Stack-oriented_programming), [reverse Polish notation](https://en.wikipedia.org/wiki/Reverse_Polish_notation) programming language.
 
 #### :memo: **note:** this README is a work in progress. Some features detailed here may still be in development
@@ -119,3 +118,4 @@ Comments in pringle work the same way as python single line comments
 - rewrite interpreter in rust (maybe)
 - debugger
 - vscode syntax highlighting
+
