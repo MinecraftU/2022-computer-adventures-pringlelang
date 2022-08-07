@@ -36,7 +36,8 @@ int Parser::gettok(SourceCode &src)
         return tok_number;
     }
 
-    if (last_char == '"') {
+    if (last_char == '"')
+    {
         std::string str;
         last_char = src.get_char();
         do
@@ -131,32 +132,43 @@ int Parser::parse(SourceCode &src)
             break;
         case tok_func:
             c = src.get_char();
-            while (c != '{') {
-                if (c == ' ' && arg_name != "") {
-                    if (name == "") {
+            while (c != '{')
+            {
+                if (c == ' ' && arg_name != "")
+                {
+                    if (name == "")
+                    {
                         name = arg_name;
-                    } else {
+                    }
+                    else
+                    {
                         arg_names.push_back(arg_name);
                     }
                     arg_name = "";
-                } else {
+                }
+                else
+                {
                     arg_name += c;
                 }
                 c = src.get_char();
             }
 
-            while (b_count != 0) {
+            while (b_count != 0)
+            {
                 c = src.get_char();
 
                 inside_src += c;
-                if (c == '{') b_count++;
-                if (c == '}') b_count--;
+                if (c == '{')
+                    b_count++;
+                if (c == '}')
+                    b_count--;
             }
             inside_src.pop_back();
             functions[name] = std::move(SourceCode(inside_src, arg_names));
             break;
         case tok_var:
-            if (gettok(src) != tok_identifier) {
+            if (gettok(src) != tok_identifier)
+            {
                 std::cout << "Name Error: invalid identifier name.\n";
                 return 1;
             }
@@ -166,18 +178,23 @@ int Parser::parse(SourceCode &src)
             break;
         case tok_loop:
             c = src.get_char();
-            while (b_count != 0) {
+            while (b_count != 0)
+            {
                 c = src.get_char();
 
                 inside_src += c;
-                if (c == '{') b_count++;
-                if (c == '}') b_count--;
+                if (c == '{')
+                    b_count++;
+                if (c == '}')
+                    b_count--;
             }
             inside_src.pop_back();
 
             new_src = std::move(SourceCode(inside_src));
-            while (true) {
-                if (parse(new_src) != 0) break;
+            while (true)
+            {
+                if (parse(new_src) != 0)
+                    break;
 
                 new_src.reset_idx();
             }
@@ -185,27 +202,32 @@ int Parser::parse(SourceCode &src)
         case tok_break:
             return 2;
             break;
-        //TODO: refactor this for performance by jumping to closing bracket on false
-        // instead of expensive recursive call to parse
+        // TODO: refactor this for performance by jumping to closing bracket on false
+        //  instead of expensive recursive call to parse
         case tok_if:
             c = src.get_char();
-            while (b_count != 0) {
+            while (b_count != 0)
+            {
                 c = src.get_char();
 
                 inside_src += c;
-                if (c == '{') b_count++;
-                if (c == '}') b_count--;
+                if (c == '{')
+                    b_count++;
+                if (c == '}')
+                    b_count--;
             }
             inside_src.pop_back();
             args.push_back(stack.top());
             stack.pop();
-            if (args[0].get_int() > 0){
+            if (args[0].get_int() > 0)
+            {
                 new_src = SourceCode(inside_src);
                 if (parse(new_src) != 0)
                     return 2;
             }
             break;
-        case tok_identifier: {
+        case tok_identifier:
+        {
             auto tok_func_id = functions.find(identifier_str);
             auto tok_var_id = variables.find(identifier_str);
             if (tok_func_id != functions.end())
@@ -232,7 +254,8 @@ int Parser::parse(SourceCode &src)
                 std::cout << "Name Error: undeclared variable/function: \"" << identifier_str << "\".\n";
                 return 1;
             }
-            break;
+        }
+        break;
         case tok_number:
             stack.push(num_val);
             break;
@@ -264,11 +287,16 @@ int Parser::parse(SourceCode &src)
                 stack.pop();
                 args.push_back(stack.top());
                 stack.pop();
-                if (args[1].get_type() == type_int && args[0].get_type() == type_int) {
+                if (args[1].get_type() == type_int && args[0].get_type() == type_int)
+                {
                     stack.push(Value(args[1].get_int() + args[0].get_int()));
-                } else if (args[1].get_type() == type_string && args[0].get_type() == type_string) {
+                }
+                else if (args[1].get_type() == type_string && args[0].get_type() == type_string)
+                {
                     stack.push(Value(args[1].get_string() + args[0].get_string()));
-                } else {
+                }
+                else
+                {
                     std::cout << "Argument Error: incorrect argument types (did not get two ints or two strings)!";
                 }
                 break;
@@ -305,7 +333,7 @@ int Parser::parse(SourceCode &src)
                 stack.pop();
                 args.push_back(stack.top());
                 stack.pop();
-                stack.push(Value((int) pow(args[1].get_int(), args[0].get_int()))); // coerce double to int by flooring
+                stack.push(Value((int)pow(args[1].get_int(), args[0].get_int()))); // coerce double to int by flooring
                 break;
             case '<':
                 args.push_back(stack.top());
