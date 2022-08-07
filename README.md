@@ -12,7 +12,7 @@ An interpreted, procedural, [stack-based](https://en.wikipedia.org/wiki/Stack-or
 4. configure CMake project `cmake ..`
 5. build the executable `cmake --build .`
 6. run the executable `./pringlelang`
-7. edit example.txt to your hearts content
+7. edit example.txt to your heart's content
 
 
 ## Syntax
