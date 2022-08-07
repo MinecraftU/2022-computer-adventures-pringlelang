@@ -7,10 +7,13 @@ An interpreted, procedural, [stack-based](https://en.wikipedia.org/wiki/Stack-or
 
 
 ## How to build and run pringle
-1.
-2.
-3.
-
+1. clone this repoo
+2. `mkdir build`
+3. `cd build`
+4. configure CMake project `cmake ..`
+5. build the executable `cmake --build .`
+6. run the executable `./pringlelang`
+7. edit input.txt to your hearts content
 
 
 ## Syntax
