@@ -198,6 +198,7 @@ int Parser::parse(SourceCode &src)
                 return 1;
             }
             break;
+        }
         case tok_number:
             values.push(num_val);
             break;
