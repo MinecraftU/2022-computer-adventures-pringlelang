@@ -3,27 +3,37 @@ An interpreted, procedural, [stack-based](https://en.wikipedia.org/wiki/Stack-or
 
 #### :memo: **note:** this README is a work in progress. Some features detailed here may still be in development
 
+## Dependencies
 
+* `cmake`
+  * Mac: `brew install cmake`
+  * Linux: use your system's package manager
 
 ## How to build and run pringle
-1. clone this repoo
-2. `mkdir build`
-3. `cd build`
-4. configure CMake project `cmake ..`
-5. build the executable `cmake --build .`
-6. run the executable `./pringlelang`
-7. edit example.txt to your heart's content
 
+1. clone this repoo
+1. `mkdir build`
+1. `cd build`
+1. configure CMake project `cmake ..`
+1. build the executable `cmake --build .`
+1. run the test suite
+  1. cd `test`
+  1. `./unit_tests`
+1. cd back up `cd ..` and run the executable `./pringlelang`
+1. edit example.txt to your heart's content
 
 ## Syntax
 ### Example expressions 
+
 * `3 5 + print`
 * `6 3 / 10 2 / + 3 - print`
-* `func square x { x x * }`
+* ```
+  func square x { x x * }
+  2 square print
+  ```
 
 A typical pringlelang expression looks like `arg1 arg2 ... argN function`, where the arguments are other expressions; or values, which are integers ``/\d+/``, strings ``/".*"/``, or identifiers (variable or function) ``/[a-zA-Z]\w*/``. For special functions, there may be trailing special statements (e.g. in `2 var x`, x is a special statement, in `loop {...}`, the curly braces with the expressions inside them is a special statement).
-  
-  
+
 ### Operators
 #### Math
 - `+` addition
@@ -39,7 +49,9 @@ A typical pringlelang expression looks like `arg1 arg2 ... argN function`, where
 - `=` equals (comparison)
 
 #### Stack manipulations (WIP)
+
 Similar to [Forth](https://www.forth.com/starting-forth/2-stack-manipulation-operators-arithmetic/), pringle includes operators that help the programmer rearrange values on the stack
+
 - ``dup`` duplicate the top element
 - ``twodup`` duplicate the top two elements on the stack
 - ``swap`` swap the positions of the top two elements on the stack
@@ -47,7 +59,9 @@ Similar to [Forth](https://www.forth.com/starting-forth/2-stack-manipulation-ope
 
 
 ### Types
+
 Currently there are three types of values that can be represented in pringle:
+
 - strings
 - integers (signed 32 bit)
   - **note:** positive values are truthy while 0 and negative values are falsy  
@@ -57,56 +71,60 @@ Currently there are three types of values that can be represented in pringle:
   - see integers
 
 ### Variables
+
 You must declare and assign a variable at the same time. The expression before the `var` function/keyword is the value of the variable and the identifier after `var` is the variable's name. Note that all variables are in the global scope.
-* variable declaration and use example: 
+
 ```
+# variable declaration and use example
 3 4 + var n 
 ```
-*assigns the value 7 to the variable n*
 
 ```
-n print
+# assigns the value 7 to the variable n
+n print # outputs 7
 ```
-*outputs 7*
-
 
 ### Functions
+
 You declare functions in the form `func arg1 arg2 ... argN {...}`. `func` is the function declaration keyword, and it's followed by space separated args (these args will be replaced with their actual values when the function is called), which is followed by the function body wrapped in curly braces. You can return values just by adding them to the stack.
 
-
 ### If statements
+
 Add an if statement by using `expr if {...}`. expr here would be an expression that would be coerced into a boolean by if. If that boolean is true, the if body wrapped in curly braces will run.
 
-
 ### Loops
+
 Add an infinite loop by using `loop {...}`. `loop` is the infinite loop function/keyword, and it's followed by the loop body wrapped in curly braces. Use the `break` keyword to break out of the infinite loop.
-* for loop example
+
 ```
+# for loop example
 1 var flag
     loop {
       flag print
       flag 1 + var flag
       flag 10 = if {break}
     }
- ```
-*outputs 123456789*
-* same example using a stack-oriented programming approach
+# outputs 123456789
 ```
+
+```
+# same example using a stack-oriented programming approach
 1
 loop {
     dup print
     1 +
     dup 10 = if {break}
 }
+# outputs 123456789
 ```
-*outputs 123456789*
 
 ### Comments
+
 Comments in pringle work the same way as python single line comments
 
-```# this is a comment and everything written after the "#" on this line will be ignored```
-
-
+```
+# this is a comment and everything written after the "#" on this line will be ignored
+```
 
 ## Future Goals
 
@@ -118,4 +136,3 @@ Comments in pringle work the same way as python single line comments
 - rewrite interpreter in rust (maybe)
 - debugger
 - vscode syntax highlighting
-
