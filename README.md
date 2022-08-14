@@ -11,7 +11,7 @@ An interpreted, procedural, [stack-based](https://en.wikipedia.org/wiki/Stack-or
 
 ## How to build and run pringle
 
-1. clone this repoo
+1. clone this repo
 1. `mkdir build`
 1. `cd build`
 1. configure CMake project: `cmake ..`
@@ -74,11 +74,10 @@ You must declare and assign a variable at the same time. The expression before t
 
 ```
 # variable declaration and use example
-3 4 + var n 
+3 4 + var n  # assigns the value 7 to the variable n
 ```
 
 ```
-# assigns the value 7 to the variable n
 n print # outputs 7
 ```
 
