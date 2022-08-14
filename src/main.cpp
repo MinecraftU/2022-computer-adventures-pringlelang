@@ -1,5 +1,6 @@
-#include "../inc/source_code.hpp"
-#include "../inc/parser.hpp"
+#include "source_code.hpp"
+#include "type.hpp"
+#include "parser.hpp"
 
 int main()
 {

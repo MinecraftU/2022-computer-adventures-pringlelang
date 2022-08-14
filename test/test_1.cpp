@@ -4,7 +4,7 @@
 // NOTE: putting each "line" in quotes will not put newlines between the lines. beware of unexpected errors caused by this lack of whitespace.
 
 // helper function so i don't have to type all this out to check top of stack after parsing
-int get_top(std::string raw_src) { 
+Value get_top(std::string raw_src) { 
     Parser parser;
     SourceCode src = SourceCode(raw_src);
     parser.parse(src);
@@ -44,7 +44,7 @@ TEST_CASE("Top of stack printed to stdout", "[output]") {
 }
 
 TEST_CASE("Math expression is computed", "[math expression]") {
-    int top = get_top(
+    Value top = get_top(
         "3 5 * 4 + 6 3 / 6 3 / + * 3 7 * -"
     );
     REQUIRE(top == 55);
@@ -61,7 +61,7 @@ TEST_CASE("Function is delcared and called", "[function]") {
 }
 
 TEST_CASE("Function with return value is computed", "[function return]") {
-    int top = get_top(
+    Value top = get_top(
         "func seven {"
         "    7"
         "}"
@@ -71,7 +71,7 @@ TEST_CASE("Function with return value is computed", "[function return]") {
 }
 
 TEST_CASE("Function with return value and arguments is computed", "[function arguments]") {
-    int top = get_top(
+    Value top = get_top(
         "func sum4 a b c d {"
         "    a b + c + d +"
         "}"
@@ -81,7 +81,7 @@ TEST_CASE("Function with return value and arguments is computed", "[function arg
 }
 
 TEST_CASE("Nested functions throws no errors", "[nested functions]") {
-    int top = get_top(
+    Value top = get_top(
         "func p {"
         "    func q {"
         "        func r {"
@@ -97,7 +97,7 @@ TEST_CASE("Nested functions throws no errors", "[nested functions]") {
 }
 
 TEST_CASE("Variables can be assigned and used", "[variables]") {
-    int top = get_top(
+    Value top = get_top(
         "10 var x "
         "1 x +"
     );
@@ -105,7 +105,7 @@ TEST_CASE("Variables can be assigned and used", "[variables]") {
 }
 
 TEST_CASE("Variables can be reassigned", "[variable ressignment]") {
-    int top = get_top(
+    Value top = get_top(
         "10 var x "
         "x 1 + var x "
         "x"
@@ -114,7 +114,7 @@ TEST_CASE("Variables can be reassigned", "[variable ressignment]") {
 }
 
 TEST_CASE("Variables can be assigned and used inside functions", "[variables in functions]") {
-    int top = get_top(
+    Value top = get_top(
         "func seven {7 var x x} seven"
     );
 
@@ -144,7 +144,7 @@ TEST_CASE("Incorrect bracket placement throws error", "[bracket error 2]") {
 }
 
 TEST_CASE("Variables inside functions can be redefined", "[variable redefinition]") {
-    int top = get_top(
+    Value top = get_top(
         "func seven {7 var x x} seven\n"
         "func eight {8 var x x} eight"
     );
@@ -153,7 +153,7 @@ TEST_CASE("Variables inside functions can be redefined", "[variable redefinition
 }
 
 TEST_CASE("Infinite loop can be broken out of", "[infinite loop break]") {
-    int top = get_top(
+    Value top = get_top(
         "0 var x "
         "loop {"
         "    x"
@@ -165,7 +165,7 @@ TEST_CASE("Infinite loop can be broken out of", "[infinite loop break]") {
 }
 
 TEST_CASE("If statement works with 1 coerced to true", "[if statement]") {
-    int top = get_top(
+    Value top = get_top(
         "0 "
         "1 if {"
         "    1 1 + 1 -"
@@ -175,7 +175,7 @@ TEST_CASE("If statement works with 1 coerced to true", "[if statement]") {
 }
 
 TEST_CASE("If statement works with 12394 coerced to true", "[if statement 2]") {
-    int top = get_top(
+    Value top = get_top(
         "0 "
         "12 1000 * 394 + if { 1 1 * 1 * }"
     );
@@ -183,7 +183,7 @@ TEST_CASE("If statement works with 12394 coerced to true", "[if statement 2]") {
 }
 
 TEST_CASE("If statement works with 0 coerced to false", "[if statement 3]") {
-    int top = get_top(
+    Value top = get_top(
         "0 "
         "0 if {"
         "    1 3 + 3 -"
@@ -193,7 +193,7 @@ TEST_CASE("If statement works with 0 coerced to false", "[if statement 3]") {
 }
 
 TEST_CASE("If statement works inside loop", "[if statement in loop]") {
-    int top = get_top(
+    Value top = get_top(
         "0 5 - var x "
         "loop {"
         "    x"
@@ -220,126 +220,126 @@ TEST_CASE("Invalid amount of operands (1) throws error", "[operand error1]") {
 }
 
 TEST_CASE("Modulo is computed", "[modulo]") {
-    int top = get_top(
+    Value top = get_top(
         "4 3 %"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("Pow is computed", "[pow]") {
-    int top = get_top(
+    Value top = get_top(
         "2 5 ^"
     );
     REQUIRE(top == 32);
 }
 
 TEST_CASE("Addition is computed", "[addition]") {
-    int top = get_top(
+    Value top = get_top(
         "3 4 +"
     );
     REQUIRE(top == 7);
 }
 
 TEST_CASE("Subtraction is computed", "[subtraction]") {
-    int top = get_top(
+    Value top = get_top(
         "3 4 -"
     );
     REQUIRE(top == -1);
 }
 
 TEST_CASE("Multiplication is computed", "[multiplication]") {
-    int top = get_top(
+    Value top = get_top(
         "7 8 *"
     );
     REQUIRE(top == 56);
 }
 
 TEST_CASE("Division is computed", "[division]") {
-    int top = get_top(
+    Value top = get_top(
         "8 2 /"
     );
     REQUIRE(top == 4);
 }
 
 TEST_CASE("less than when less", "[less than]") {
-    int top = get_top(
+    Value top = get_top(
         "3 4 <"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("less than when equal") {
-    int top = get_top(
+    Value top = get_top(
         "7 7 <"
     );
     REQUIRE(top == 0);
 }
 
 TEST_CASE("less than when greater") {
-    int top = get_top(
+    Value top = get_top(
         "5 4 <"
     );
     REQUIRE(top == 0);
 }
 
 TEST_CASE("greater than when greater", "[greater than]") {
-    int top = get_top(
+    Value top = get_top(
         "8 7 >"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("greater than when equal") {
-    int top = get_top(
+    Value top = get_top(
         "7 7 >"
     );
     REQUIRE(top == 0);
 }
 
 TEST_CASE("greater than when less") {
-    int top = get_top(
+    Value top = get_top(
         "1 2 >"
     );
     REQUIRE(top == 0);
 }
 
 TEST_CASE("equal to") {
-    int top = get_top(
+    Value top = get_top(
         "2 2 ="
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("equal to fails") {
-    int top = get_top(
+    Value top = get_top(
         "2 3 ="
     );
     REQUIRE(top == 0);
 }
 
 TEST_CASE("not equal to") {
-    int top = get_top(
+    Value top = get_top(
         "2 3 = !"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("not false") {
-    int top = get_top(
+    Value top = get_top(
         "0 !"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("not true") {
-    int top = get_top(
+    Value top = get_top(
         "1 !"
     );
     REQUIRE(top == 0);
 }
 
 TEST_CASE("not equal to fails") {
-    int top = get_top(
+    Value top = get_top(
         "2 2 = !"
     );
     REQUIRE(top == 0);
@@ -353,42 +353,42 @@ TEST_CASE("not with no operand") {
 }
 
 TEST_CASE("not not false") {
-    int top = get_top(
+    Value top = get_top(
         "0 ! !"
     );
     REQUIRE(top == 0);
 }
 
 TEST_CASE("not not true") {
-    int top = get_top(
+    Value top = get_top(
         "1 ! !"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("or true") {
-    int top = get_top(
+    Value top = get_top(
         "1 1 |"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("or false") {
-    int top = get_top(
+    Value top = get_top(
         "0 1 |"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("or false 2") {
-    int top = get_top(
+    Value top = get_top(
         "1 0 |"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("or false 3") {
-    int top = get_top(
+    Value top = get_top(
         "0 0 |"
     );
     REQUIRE(top == 0);
@@ -402,28 +402,28 @@ TEST_CASE("or with no operand") {
 }
 
 TEST_CASE("and true") {
-    int top = get_top(
+    Value top = get_top(
         "1 1 &"
     );
     REQUIRE(top == 1);
 }
 
 TEST_CASE("and false") {
-    int top = get_top(
+    Value top = get_top(
         "0 1 &"
     );
     REQUIRE(top == 0);
 }
 
 TEST_CASE("and false 2") {
-    int top = get_top(
+    Value top = get_top(
         "1 0 &"
     );
     REQUIRE(top == 0);
 }
 
 TEST_CASE("and false 3") {
-    int top = get_top(
+    Value top = get_top(
         "0 0 &"
     );
     REQUIRE(top == 0);
@@ -434,4 +434,32 @@ TEST_CASE("and with no operand") {
         "&"
     );
     REQUIRE(exit_code == 1);
+}
+
+TEST_CASE("string gets pushed to stack correctly") {
+    Value top = get_top(
+        "\"abcdefg\""
+    );
+    REQUIRE(top == "abcdefg");
+}
+
+TEST_CASE("string can be printed") {
+    int exit_code = get_exit_code(
+        "\"Hello, world!\" print"
+    );
+    REQUIRE(exit_code == 0);
+}
+
+TEST_CASE("strings can get concatenated with +") {
+    Value top = get_top(
+        "\"amo\" \"gus\" +"
+    );
+    REQUIRE(top == "amogus");
+}
+
+TEST_CASE("can access character of the string at index") {
+    Value top = get_top(
+        "\"qwerty\" 2 ."
+    );
+    REQUIRE(top == "e");
 }

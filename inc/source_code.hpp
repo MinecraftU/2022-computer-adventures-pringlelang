@@ -25,6 +25,7 @@ enum Token
     // primary
     tok_identifier = -8,
     tok_number = -9,
+    tok_string = -10,
 };
 
 struct SourceCode
