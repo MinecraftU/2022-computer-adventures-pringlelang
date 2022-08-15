@@ -17,7 +17,7 @@ An interpreted, procedural, [stack-based](https://en.wikipedia.org/wiki/Stack-or
 1. configure CMake project: `cmake ..`
 1. build the executable: `cmake --build .`
 1. run the test suite: `ctest`
-1. `cd ..` and run the executable `./pringlelang`
+1. run the executable `./pringlelang`
 1. edit example.txt to your heart's content
 
 ## Syntax
