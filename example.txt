@@ -1,6 +1,4 @@
-"
-" var newline
-
-"Hello, world!" newline + print
-
-"ab" "abc" 2 . + print
+func sum4 a b c d {
+    a b + c + d +
+}
+1 2 3 4 sum4 print
