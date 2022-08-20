@@ -178,10 +178,11 @@ int Parser::parse(SourceCode &src)
                 tok_func_id->second.reset_idx();
 
                 std::vector<std::string> str_args;
-                for (size_t i = 0; i < tok_func_id->second.get_arg_names().size(); i++)
+                size_t s = tok_func_id->second.get_arg_names().size();
+                for (size_t i = 0; i < s; i++)
                 {
-                    str_args.push_back(tok_func_id->second.get_arg_names()[i]);
-                    variables[tok_func_id->second.get_arg_names()[i]] = values.top();
+                    str_args.push_back(tok_func_id->second.get_arg_names()[s - i - 1]);
+                    variables[tok_func_id->second.get_arg_names()[s - i - 1]] = values.top();
                     values.pop();
                 }
 

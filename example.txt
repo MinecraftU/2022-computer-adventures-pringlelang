@@ -1,4 +1,7 @@
-func sum4 a b c d {
-    a b + c + d +
+func print3 one two three {
+    one print
+    two print
+    three print
 }
-1 2 3 4 sum4 print
+
+1 2 3 print3
