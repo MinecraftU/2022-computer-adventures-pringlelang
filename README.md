@@ -46,7 +46,7 @@ A typical pringlelang expression looks like `arg1 arg2 ... argN function`, where
 - `!` not
 - `=` equals (comparison)
 
-#### Stack manipulations (WIP)
+#### Stack manipulations
 
 Similar to [Forth](https://www.forth.com/starting-forth/2-stack-manipulation-operators-arithmetic/), pringle includes operators that help the programmer rearrange values on the stack
 
