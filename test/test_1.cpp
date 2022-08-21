@@ -80,6 +80,16 @@ TEST_CASE("Function with return value and arguments is computed", "[function arg
     REQUIRE(top == 10);
 }
 
+TEST_CASE("Function arguments are in correct order", "[function argument order]") {
+    Value top = get_top(
+        "func x a b c {"
+        "   a b c"
+        "}"
+        "1 2 3 x"
+    );
+    REQUIRE(top == 3);
+}
+
 TEST_CASE("Nested functions throws no errors", "[nested functions]") {
     Value top = get_top(
         "func p {"

@@ -176,17 +176,21 @@ int Parser::parse(SourceCode &src)
             if (tok_func_id != functions.end())
             { // if identifier_str is a key in functions
                 tok_func_id->second.reset_idx();
+
                 std::vector<std::string> str_args;
-                for (size_t i = 0; i < tok_func_id->second.get_arg_names().size(); i++)
+                size_t s = tok_func_id->second.get_arg_names().size();
+                for (size_t i = 0; i < s; i++)
                 {
-                    str_args.push_back(values.top().to_string());
+                    str_args.push_back(tok_func_id->second.get_arg_names()[s - i - 1]);
+                    variables[tok_func_id->second.get_arg_names()[s - i - 1]] = values.top();
                     values.pop();
                 }
-                std::reverse(str_args.begin(), str_args.end());
-                std::string replaced_raw = tok_func_id->second.replace_args(str_args);
-                SourceCode replaced = std::move(SourceCode(replaced_raw));
 
-                parse(replaced);
+                parse(tok_func_id->second);
+
+                for (std::string str_arg : str_args) {
+                    variables.erase(variables.find(str_arg));
+                }
             }
             else if (tok_var_id != variables.end())
             { // if identifier_str is a key in functions

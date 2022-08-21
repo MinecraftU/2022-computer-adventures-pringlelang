@@ -1,6 +1,7 @@
-"
-" var newline
+func print3 one two three {
+    one print
+    two print
+    three print
+}
 
-"Hello, world!" newline + print
-
-"ab" "abc" 2 . + print
+1 2 3 print3
