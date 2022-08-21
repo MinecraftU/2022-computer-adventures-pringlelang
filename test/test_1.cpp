@@ -12,6 +12,14 @@ Value get_top(std::string raw_src) {
     return parser.try_peek();
 }
 
+std::stack<Value> get_stack(std::string raw_src) { 
+    Parser parser;
+    SourceCode src = SourceCode(raw_src);
+    parser.parse(src);
+
+    return parser.get_stack();
+}
+
 int get_exit_code(std::string raw_src) {
     Parser parser;
     SourceCode src = SourceCode(raw_src);
@@ -446,18 +454,68 @@ TEST_CASE("and with no operand") {
     REQUIRE(exit_code == 1);
 }
 
+TEST_CASE("dup", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 dup"
+    ));
+    
+    REQUIRE(s.top().get_int() == 1);
+    s.pop();
+    REQUIRE(s.top().get_int() == 1);
+}
+
+TEST_CASE("dup 2", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 dup"
+    ));
+    
+    REQUIRE(s.top().get_int() == 2);
+    s.pop();
+    REQUIRE(s.top().get_int() == 2);
+    s.pop();
+    REQUIRE(s.top().get_int() == 1);
+}
+
+TEST_CASE("swap", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 swap"
+    ));
+    
+    REQUIRE(s.top().get_int() == 1);
+    s.pop();
+    REQUIRE(s.top().get_int() == 2);
+}
+
+TEST_CASE("twodup", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 twodup"
+    ));
+    
+    REQUIRE(s.top().get_int() == 2);
+    s.pop();
+    REQUIRE(s.top().get_int() == 1);
+    s.pop();
+    REQUIRE(s.top().get_int() == 2);
+    s.pop();
+    REQUIRE(s.top().get_int() == 1);
+}
+
+TEST_CASE("over", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 3 over"
+    ));
+    
+    REQUIRE(s.top().get_int() == 1);
+    s.pop();
+    REQUIRE(s.top().get_int() == 3);
+    s.pop();
+    REQUIRE(s.top().get_int() == 2);
+}
 TEST_CASE("string gets pushed to stack correctly") {
     Value top = get_top(
         "\"abcdefg\""
     );
     REQUIRE(top == "abcdefg");
-}
-
-TEST_CASE("string can be printed") {
-    int exit_code = get_exit_code(
-        "\"Hello, world!\" print"
-    );
-    REQUIRE(exit_code == 0);
 }
 
 TEST_CASE("strings can get concatenated with +") {
@@ -467,9 +525,35 @@ TEST_CASE("strings can get concatenated with +") {
     REQUIRE(top == "amogus");
 }
 
+TEST_CASE("string can be printed") {
+    int exit_code = get_exit_code(
+        "\"Hello, world!\n\" print"
+    );
+    REQUIRE(exit_code == 0);
+}
+
 TEST_CASE("can access character of the string at index") {
     Value top = get_top(
         "\"qwerty\" 2 ."
     );
     REQUIRE(top == "e");
 }
+
+TEST_CASE("pop", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "1 2 pop"
+    ));
+    REQUIRE(s.top().get_int() == 1);
+}
+
+TEST_CASE("pop with strings", "[Stack manipulation]") {
+    auto s = std::move(get_stack(
+        "\"abc\" \"def\" pop"
+    ));
+    REQUIRE(s.top().get_string() == "abc");
+}
+
+TEST_CASE("pop with empty stack", "[Stack manipulation]") {
+    REQUIRE_THROWS_AS(get_exit_code("pop"), std::logic_error);
+}
+
