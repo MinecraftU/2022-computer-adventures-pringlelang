@@ -25,14 +25,14 @@ enum Token
     // primary
     tok_identifier = -8,
     tok_number = -9,
+    tok_string = -10,
 
     //stack commands
-    tok_dup = -10,
-    tok_swap = -11,
-    tok_over = -12,
-    tok_twodup = -13,
-    tok_pop = -14,
-    tok_string = -15,
+    tok_dup = -11,
+    tok_swap = -12,
+    tok_over = -13,
+    tok_twodup = -14,
+    tok_pop = -15,
 };
 
 struct SourceCode

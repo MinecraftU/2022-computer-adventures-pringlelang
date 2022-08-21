@@ -1,22 +1,7 @@
-1 0 # set flag 1, set i 0
-loop {
-    1 + # increment i
-    dup 3 % 0 = if { # if div by 3 print Fizz
-        "Fizz" print
-        swap pop 0 swap # set flag false
-    }
-    dup 5 % 0 = if { # if div by 5 print Buzz
-        "Buzz" print
-        swap pop 0 swap # set flag false
-    }
-    swap dup if { # if flag print
-        swap
-        dup print
-        swap
-    }
-    swap
-    "
-"   print
-    dup 100 = if {break}
-    swap pop 1 swap # set flag true
+func print3 one two three {
+    one print
+    two print
+    three print
 }
+
+1 2 3 print3

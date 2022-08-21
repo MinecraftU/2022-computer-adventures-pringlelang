@@ -88,6 +88,16 @@ TEST_CASE("Function with return value and arguments is computed", "[function arg
     REQUIRE(top == 10);
 }
 
+TEST_CASE("Function arguments are in correct order", "[function argument order]") {
+    Value top = get_top(
+        "func x a b c {"
+        "   a b c"
+        "}"
+        "1 2 3 x"
+    );
+    REQUIRE(top == 3);
+}
+
 TEST_CASE("Nested functions throws no errors", "[nested functions]") {
     Value top = get_top(
         "func p {"
@@ -508,18 +518,18 @@ TEST_CASE("string gets pushed to stack correctly") {
     REQUIRE(top == "abcdefg");
 }
 
-TEST_CASE("string can be printed") {
-    int exit_code = get_exit_code(
-        "\"Hello, world!\n\" print"
-    );
-    REQUIRE(exit_code == 0);
-}
-
 TEST_CASE("strings can get concatenated with +") {
     Value top = get_top(
         "\"amo\" \"gus\" +"
     );
     REQUIRE(top == "amogus");
+}
+
+TEST_CASE("string can be printed") {
+    int exit_code = get_exit_code(
+        "\"Hello, world!\n\" print"
+    );
+    REQUIRE(exit_code == 0);
 }
 
 TEST_CASE("can access character of the string at index") {
@@ -546,3 +556,4 @@ TEST_CASE("pop with strings", "[Stack manipulation]") {
 TEST_CASE("pop with empty stack", "[Stack manipulation]") {
     REQUIRE_THROWS_AS(get_exit_code("pop"), std::logic_error);
 }
+
