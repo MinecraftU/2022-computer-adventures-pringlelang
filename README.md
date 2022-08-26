@@ -123,6 +123,14 @@ Comments in pringle work the same way as python single line comments
 # this is a comment and everything written after the "#" on this line will be ignored
 ```
 
+## Examples
+
+[fizzbuzz in Pringle](https://gist.github.com/spierceVR/db9d5522f0998b450912631e9e2fef41)
+
+Pringle v JavaScript:
+
+![pringle-v-js](https://user-images.githubusercontent.com/124208/185816916-c65d4191-7caa-465e-b699-ed25ccb03922.png)
+
 ## Future Goals
 
 - Work on AST branch as a compiled language
